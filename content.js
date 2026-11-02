@@ -178,7 +178,8 @@ input{width:100%;border:1px solid #ffffff24;border-radius:8px;padding:8px 10px;f
     [...listEl.querySelectorAll('.item')].slice(0, 8).forEach((el, n) => animate(el, [{ opacity: 0, transform: 'translateY(5px)' }, { opacity: 1, transform: 'none' }], { duration: 240, delay: 40 + n * 22, fill: 'backwards' }));
   }
   function refresh(event) {
-    if (composing || filling) return;
+    // Page scripts can dispatch synthetic events; only real user input may open the menu or insert replies.
+    if (composing || filling || !event.isTrusted) return;
     const el = editor(event.target);
     if (!el) { close(); return; }
     const snap = snapshot(el);
@@ -295,7 +296,7 @@ input{width:100%;border:1px solid #ffffff24;border-radius:8px;padding:8px 10px;f
   document.addEventListener('compositionstart', () => { composing = true; close(); }, true);
   document.addEventListener('compositionend', e => { composing = false; refresh(e); }, true);
   document.addEventListener('keydown', e => {
-    if (!open) return;
+    if (!open || !e.isTrusted) return;
     if (e.key === 'Escape') {
       e.preventDefault(); e.stopImmediatePropagation();
       if (view === 'form') { back(); return; }

@@ -151,3 +151,13 @@ test('atalhos de início inserem a assinatura sem asteriscos', async ({ page }) 
     await expect(field).toHaveValue(`Atendimento iniciado por ${name}`);
   }
 });
+test('eventos sintéticos da página não abrem o menu nem inserem respostas', async ({ page }) => {
+  await page.goto(file('teste.html')); const widget = page.locator('quick-replies');
+  await page.evaluate(() => {
+    const el = document.querySelector('#plain'); el.focus(); el.value = '/numeropedido'; el.setSelectionRange(13, 13);
+    el.dispatchEvent(new InputEvent('input', { bubbles: true }));
+    el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+  });
+  await page.waitForTimeout(150);
+  await expect(widget).toBeHidden(); await expect(page.locator('#plain')).toHaveValue('/numeropedido');
+});
