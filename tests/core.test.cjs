@@ -71,6 +71,16 @@ test('CSV aceita ; ou , e cabeçalhos em português, e exporta de volta', () => 
   assert.throws(() => QR.parseCSV('nome,texto\nx,y'), /coluna/);
   assert.deepEqual(QR.parseCSV(QR.toCSV(rows)), rows);
 });
+test('CSV exportado não vira fórmula na planilha e volta igual na importação', () => {
+  const rows = [
+    { shortcut: 'soma', title: '=SUM(A1)', category: '-Cobrança', body: '+55 48 99999-0000\n@todos' },
+    { shortcut: 'lista', title: 'Lista', category: 'Geral', body: "'=já tinha aspa" },
+  ];
+  const csv = QR.toCSV(rows);
+  assert.ok(!/;"?[=+\-@]/.test(csv), 'célula começa com gatilho de fórmula');
+  assert.ok(csv.includes("'=SUM(A1)") && csv.includes("'-Cobrança") && csv.includes("'+55"));
+  assert.deepEqual(QR.parseCSV(csv), rows);
+});
 test('mesclar pacotes mantém as respostas atuais e pula atalhos repetidos', () => {
   const mine = [{ shortcut: 'ola', title: 'Minha', category: 'A', body: 'x' }];
   const merged = QR.merge(mine, [{ shortcut: 'ola', title: 'Pacote', category: 'A', body: 'y' }, { shortcut: 'novo', title: 'Novo', category: 'A', body: 'z' }]);

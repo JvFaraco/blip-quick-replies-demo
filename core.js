@@ -97,9 +97,12 @@
       at[key] = header.findIndex(h => names.includes(h));
       if (at[key] < 0) throw Error(`Falta a coluna "${names[0]}" no cabeçalho do CSV.`);
     }
-    return validate(table.slice(1).map(r => ({ shortcut: r[at.shortcut] ?? '', title: r[at.title] ?? '', category: r[at.category] ?? '', body: r[at.body] ?? '' })));
+    return validate(table.slice(1).map(r => ({ shortcut: r[at.shortcut] ?? '', title: unquote(r[at.title] ?? ''), category: unquote(r[at.category] ?? ''), body: unquote(r[at.body] ?? '') })));
   }
-  const cell = v => /[";\n\r]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
+  // A leading = + - @ would run as a formula when the CSV is opened in a spreadsheet; the quote prefix neutralizes it and parseCSV removes it again.
+  const FORMULA = /^'*\s*[=+\-@\t\r]/;
+  const cell = raw => { const v = FORMULA.test(raw) ? `'${raw}` : raw; return /[";\n\r]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v; };
+  const unquote = v => v.startsWith("'") && FORMULA.test(v.slice(1)) ? v.slice(1) : v;
   const toCSV = rows => ['atalho;titulo;categoria;mensagem', ...rows.map(r => [r.shortcut, r.title, r.category, r.body].map(cell).join(';'))].join('\n') + '\n';
 
   const store = typeof chrome !== 'undefined' && chrome.storage ? chrome.storage.local : null;
