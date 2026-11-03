@@ -6,7 +6,7 @@ import subprocess
 
 ROOT = Path(__file__).resolve().parent
 FILES = (
-    "manifest.json", "catalogo.js", "core.js", "content.js",
+    "manifest.json", "catalogo.js", "core.js", "content.js", "background.js",
     "popup.html", "popup.js", "biblioteca.html", "biblioteca.js",
     "ui.css", "portal.css", "theme.js", "teste.html", "README.md",
     "biblioteca-padrao.json", "vendor/inter-latin-wght.woff2",

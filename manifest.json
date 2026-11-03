@@ -1,13 +1,23 @@
 {
   "manifest_version": 3,
   "name": "Quick Replies",
-  "version": "1.0.0",
-  "description": "Respostas rápidas para atendimento no Blip (demo). Digite / para escolher uma mensagem e revisar antes de enviar.",
+  "version": "1.1.0",
+  "description": "Respostas rápidas para atendimento em qualquer chat web. Digite / para escolher uma mensagem e revisar antes de enviar.",
   "permissions": [
     "storage",
     "activeTab",
     "scripting"
   ],
+  "host_permissions": [
+    "https://*.blip.ai/*"
+  ],
+  "optional_host_permissions": [
+    "https://*/*",
+    "http://*/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
   "action": {
     "default_title": "Quick Replies",
     "default_popup": "popup.html",
@@ -19,20 +29,6 @@
     }
   },
   "options_page": "biblioteca.html",
-  "content_scripts": [
-    {
-      "matches": [
-        "https://*.blip.ai/*"
-      ],
-      "js": [
-        "catalogo.js",
-        "core.js",
-        "content.js"
-      ],
-      "all_frames": true,
-      "run_at": "document_idle"
-    }
-  ],
   "icons": {
     "16": "icons/icon-16.png",
     "32": "icons/icon-32.png",

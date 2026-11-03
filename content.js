@@ -3,7 +3,7 @@
   globalThis.__quickReplies = true;
   const LIMIT = 30, VAR = /\{\{\s*([^{}\n]+?)\s*\}\}/g, EASE = 'cubic-bezier(.16,1,.3,1)';
   const motion = !matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let library = [], matches = [], index = 0, context = null, composing = false, filling = false;
+  let library = [], fixed = {}, matches = [], index = 0, context = null, composing = false, filling = false;
   // open: logical state (the panel may still be fading out); side: anchored above or below the editor while open.
   let open = false, view = null, query = null, side = null, listEl = null, cursorEl = null;
   let closing = null, heightAnim = null, noticeTimer = 0, frame = 0, pointer = '', pointerMoved = false;
@@ -242,8 +242,9 @@ input{width:100%;border:1px solid #ffffff24;border-radius:8px;padding:8px 10px;f
     renderList('back');
   }
   function choose(row) {
-    const names = QR.variables(row.body);
-    if (!names.length) { insert(row.body); return; }
+    // Fixed variables and the automatic ones (greeting, date, time) are filled silently; the form asks only for what is left.
+    const values = QR.known(fixed), names = QR.missing(row.body, values);
+    if (!names.length) { insert(QR.fill(row.body, values)); return; }
     filling = true; view = 'form';
     const header = node('header'), backButton = node('button', '‹', 'back');
     backButton.type = 'button'; backButton.setAttribute('aria-label', 'Voltar para a lista'); backButton.addEventListener('click', back);
@@ -263,8 +264,8 @@ input{width:100%;border:1px solid #ffffff24;border-radius:8px;padding:8px 10px;f
       preview.append(row.body.slice(last, m.index), chip); chips.push(chip); last = m.index + m[0].length;
     }
     preview.append(row.body.slice(last));
-    const sync = () => chips.forEach(chip => { const value = fields.get(chip.dataset.name).value; chip.textContent = value || `{{${chip.dataset.name}}}`; chip.classList.toggle('filled', !!value); });
-    const values = () => Object.fromEntries([...fields].map(([name, input]) => [name, input.value]));
+    const sync = () => chips.forEach(chip => { const name = chip.dataset.name, value = fields.has(name) ? fields.get(name).value : values[name]; chip.textContent = value || `{{${name}}}`; chip.classList.toggle('filled', !!value); });
+    const typed = () => Object.fromEntries([...fields].map(([name, input]) => [name, input.value]));
     form.addEventListener('input', sync);
     form.addEventListener('focusin', e => {
       const name = [...fields].find(([, input]) => input === e.target)?.[0];
@@ -285,7 +286,7 @@ input{width:100%;border:1px solid #ffffff24;border-radius:8px;padding:8px 10px;f
     const cancel = node('button', 'Voltar', 'ghost'); cancel.type = 'button'; cancel.addEventListener('click', back);
     const actions = node('div', '', 'actions'); actions.append(submit, cancel);
     form.append(preview, actions);
-    form.addEventListener('submit', e => { e.preventDefault(); insert(QR.fill(row.body, values())); });
+    form.addEventListener('submit', e => { e.preventDefault(); insert(QR.fill(row.body, { ...values, ...typed() })); });
     sync();
     show([header, form, hints([[['↵'], 'próximo campo'], [['Esc'], 'voltar']])], 'forward');
     fields.values().next().value.focus({ preventScroll: true });
@@ -318,7 +319,10 @@ input{width:100%;border:1px solid #ffffff24;border-radius:8px;padding:8px 10px;f
   window.addEventListener('scroll', () => { if (open) schedule(); }, true);
   window.addEventListener('resize', () => { if (open) schedule(); });
   chrome.storage.onChanged.addListener((changes, area) => {
-    if (area === 'local' && changes.library) { QR.load().then(rows => { library = rows; close(); }).catch(() => { library = []; close(); }); }
+    if (area !== 'local') return;
+    if (changes.library) QR.load().then(rows => { library = rows; close(); }).catch(() => { library = []; close(); });
+    if (changes.variables) QR.loadVariables().then(v => { fixed = v; }).catch(() => { fixed = {}; });
   });
   QR.load().then(rows => { library = rows; }).catch(() => { library = []; });
+  QR.loadVariables().then(v => { fixed = v; }).catch(() => { fixed = {}; });
 })();

@@ -2,34 +2,28 @@
   "version": 1,
   "library": [
     {
+      "shortcut": "saudacao",
+      "title": "Saudação com nome",
+      "category": "Atendimento",
+      "body": "{{saudacao}}! Meu nome é {{atendente}} e vou cuidar do seu atendimento. Como posso ajudar?"
+    },
+    {
+      "shortcut": "ola",
+      "title": "Boas-vindas",
+      "category": "Atendimento",
+      "body": "Olá! Você está falando com o atendimento da {{empresa}}. Em que posso ajudar?"
+    },
+    {
       "shortcut": "finalizar",
       "title": "Oferecer mais ajuda",
       "category": "Atendimento",
       "body": "Posso ajudar em algo mais? 🙂"
     },
     {
-      "shortcut": "ana",
-      "title": "Iniciar atendimento: Ana",
+      "shortcut": "aguarde",
+      "title": "Pedir um momento",
       "category": "Atendimento",
-      "body": "Atendimento iniciado por Ana"
-    },
-    {
-      "shortcut": "bruno",
-      "title": "Iniciar atendimento: Bruno",
-      "category": "Atendimento",
-      "body": "Atendimento iniciado por Bruno"
-    },
-    {
-      "shortcut": "saudacao",
-      "title": "Saudação com nome",
-      "category": "Atendimento",
-      "body": "Olá! Meu nome é {{nome}} e vou cuidar do seu atendimento."
-    },
-    {
-      "shortcut": "numeropedido",
-      "title": "Solicitar número do pedido",
-      "category": "Pedidos",
-      "body": "Por gentileza, envie o número do pedido em texto. Com ele consigo localizar sua compra e acompanhar o atendimento."
+      "body": "Só um momento, por gentileza. Estou verificando e já retorno. 🙂"
     },
     {
       "shortcut": "ematendimento",
@@ -44,57 +38,51 @@
       "body": "Olá! Nosso atendimento funciona de segunda a sexta, das 8h às 18h.\n\nSua mensagem ficou registrada e responderemos no próximo horário útil. 🙏"
     },
     {
-      "shortcut": "rastreio",
-      "title": "Como rastrear o pedido",
-      "category": "Pedidos",
-      "body": "📦 Como acompanhar a entrega\n\n1. Acesse Minha conta > Meus pedidos.\n2. Escolha o pedido e toque em Rastrear.\n3. O status é atualizado a cada movimentação da transportadora.\n\nO código de rastreio também é enviado por e-mail após o despacho."
+      "shortcut": "dados",
+      "title": "Pedir dados para localizar o cadastro",
+      "category": "Atendimento",
+      "body": "Para localizar seu cadastro, me informe por gentileza seu nome completo e o CPF ou e-mail cadastrado."
     },
     {
-      "shortcut": "statuspedido",
-      "title": "Status do pedido",
-      "category": "Pedidos",
-      "body": "O pedido #{{pedido}} está com o status: {{status}}.\n\nPrevisão de entrega: {{previsão}}."
+      "shortcut": "transferir",
+      "title": "Transferir para outro setor",
+      "category": "Atendimento",
+      "body": "Vou transferir você para o setor responsável. Em instantes um colega dará continuidade ao atendimento."
     },
     {
-      "shortcut": "trocadevolucao",
-      "title": "Troca ou devolução",
-      "category": "Trocas",
-      "body": "🔄 Troca ou devolução em até 7 dias após o recebimento\n\n1. Confirme que o produto está sem sinais de uso e com a embalagem original.\n2. Acesse Minha conta > Meus pedidos > Solicitar troca.\n3. Escolha o motivo e a forma de reembolso.\n4. Imprima a etiqueta de postagem enviada por e-mail.\n5. Leve o pacote a uma agência dos Correios.\n\n✅ Após a conferência do produto, o reembolso ou a troca é liberado em até 5 dias úteis.\n\n⚠️ Itens personalizados não podem ser trocados, exceto em caso de defeito. Em caso de defeito, envie fotos do produto e da embalagem para análise da equipe de qualidade em cópia."
+      "shortcut": "protocolo",
+      "title": "Informar protocolo",
+      "category": "Atendimento",
+      "body": "Seu protocolo de atendimento é {{protocolo}}. Guarde este número para consultas futuras."
     },
     {
-      "shortcut": "reembolso",
-      "title": "Prazo de reembolso",
-      "category": "Trocas",
-      "body": "O reembolso é feito na mesma forma de pagamento da compra:\n\n• Cartão de crédito: até 2 faturas.\n• Pix ou boleto: até 5 dias úteis na conta informada."
+      "shortcut": "retorno",
+      "title": "Prometer retorno",
+      "category": "Atendimento",
+      "body": "Vou verificar com a equipe responsável e retorno em até {{prazo}}. Obrigado pela paciência!"
     },
     {
-      "shortcut": "enderecoerrado",
-      "title": "Alterar endereço de entrega",
-      "category": "Pedidos",
-      "body": "Consigo alterar o endereço enquanto o pedido não foi despachado. Por gentileza, envie o endereço completo com CEP."
-    },
-    {
-      "shortcut": "cupom",
-      "title": "Cupom não aplicado",
-      "category": "Pagamentos",
-      "body": "Confira se o cupom está dentro da validade, se o valor mínimo foi atingido e se ele não é cumulativo com outra promoção do carrinho."
-    },
-    {
-      "shortcut": "pagamentopendente",
-      "title": "Pagamento pendente",
-      "category": "Pagamentos",
-      "body": "O pagamento ainda consta como pendente. Boletos levam até 3 dias úteis para compensar; Pix costuma ser confirmado em poucos minutos."
+      "shortcut": "desculpas",
+      "title": "Pedir desculpas",
+      "category": "Atendimento",
+      "body": "Peço desculpas pelo transtorno. Vou resolver isso o mais rápido possível."
     },
     {
       "shortcut": "avaliacao",
       "title": "Pedir avaliação",
-      "category": "Atendimento",
+      "category": "Encerramento",
       "body": "Obrigado pelo contato! Se puder, avalie este atendimento na pesquisa que chegará em seguida. Sua opinião ajuda a melhorar o serviço."
+    },
+    {
+      "shortcut": "encerrar",
+      "title": "Encerrar com despedida",
+      "category": "Encerramento",
+      "body": "Fico feliz em ter ajudado! Qualquer dúvida, é só chamar. Tenha um ótimo dia! 🙂"
     },
     {
       "shortcut": "semretorno",
       "title": "Encerrar por falta de retorno",
-      "category": "Atendimento",
+      "category": "Encerramento",
       "body": "Como não tivemos retorno, estamos encerrando esta conversa. Quando quiser, é só nos chamar para continuarmos!"
     }
   ]
