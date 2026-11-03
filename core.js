@@ -105,7 +105,8 @@
   // and parseCSV removes it again. A spreadsheet reading with the wrong separator can also start a cell after any , ; tab or line
   // break inside a value, so triggers in those positions get the same treatment (the sep= line alone is not enough: Excel ignores it after a BOM).
   // Lookahead, so consecutive delimiters are each checked; whitespace here excludes tab and line breaks because those are delimiters themselves.
-  const TRIGGER = "(?='*[^\\S\\t\\r\\n]*[=+\\-@\\t\\r])";
+  // Quotes of both kinds count as prefix too: a misparsed cell can begin at a doubled quote inside the value.
+  const TRIGGER = "(?=(?:['\"]|[^\\S\\t\\r\\n])*[=+\\-@\\t\\r])";
   const AT_CELL = new RegExp(`(^|[,;\\t\\r\\n])${TRIGGER}`, 'g'), AT_CELL_QUOTED = new RegExp(`(^|[,;\\t\\r\\n])'${TRIGGER}`, 'g');
   const neutralize = v => v.replace(AT_CELL, "$1'");
   const unquote = v => v.replace(AT_CELL_QUOTED, '$1');

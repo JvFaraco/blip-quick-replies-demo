@@ -91,9 +91,11 @@ test('CSV exportado não vira fórmula na planilha e volta igual na importação
   const nasty = [
     { shortcut: 'n1', title: 'a,=1+1,b', category: 'x; -y', body: 'linha\n=HYPERLINK("http://x")\n\t@z\r\n+w' },
     { shortcut: 'n2', title: "já,'=com aspa", category: ",''=duas", body: "normal, 'texto com aspa' e -traço no meio" },
+    { shortcut: 'n3', title: 'a,"=1+1', category: '" =x', body: 'linha\n"=1+1\n," \'@y' },
   ];
   const text = QR.toCSV(nasty);
-  for (const piece of text.split(/[,;\t\r\n]/)) assert.ok(!/^"*\s*[=+\-@]/.test(piece), `célula perigosa: ${JSON.stringify(piece)}`);
+  // A piece is safe only if the text marker ' comes before any quote, space or trigger.
+  for (const piece of text.split(/[,;\t\r\n]/)) assert.ok(!/^["\s]*[=+\-@]/.test(piece), `célula perigosa: ${JSON.stringify(piece)}`);
   assert.deepEqual(QR.parseCSV(text), nasty);
 });
 test('mesclar pacotes mantém as respostas atuais e pula atalhos repetidos', () => {
