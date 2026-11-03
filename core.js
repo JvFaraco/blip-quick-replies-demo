@@ -74,9 +74,11 @@
   // CSV: ; or , as separator, quoted fields with embedded quotes and line breaks, headers in Portuguese or English.
   const HEADERS = { shortcut: ['atalho', 'shortcut', 'comando'], title: ['titulo', 'title', 'nome'], category: ['categoria', 'category', 'grupo', 'assunto'], body: ['mensagem', 'body', 'texto', 'resposta', 'conteudo'] };
   function parseCSV(text) {
-    const src = text.replace(/^﻿/, '');
+    let src = text.replace(/^﻿/, '');
+    const pinned = src.match(/^sep=(.)\r?\n/i);
+    if (pinned) src = src.slice(pinned[0].length);
     const firstLine = src.split(/\r?\n/, 1)[0];
-    const sep = (firstLine.match(/;/g) || []).length > (firstLine.match(/,/g) || []).length ? ';' : ',';
+    const sep = pinned ? pinned[1] : (firstLine.match(/;/g) || []).length > (firstLine.match(/,/g) || []).length ? ';' : ',';
     const rows = [[]]; let field = '', quoted = false;
     for (let i = 0; i < src.length; i++) {
       const c = src[i];
@@ -101,9 +103,10 @@
   }
   // A leading = + - @ would run as a formula when the CSV is opened in a spreadsheet; the quote prefix neutralizes it and parseCSV removes it again.
   const FORMULA = /^'*\s*[=+\-@\t\r]/;
-  const cell = raw => { const v = FORMULA.test(raw) ? `'${raw}` : raw; return /[";\n\r]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v; };
+  // Commas are quoted too, and the first line pins the separator in Excel, so a locale that splits on ',' cannot expose a trigger mid-field.
+  const cell = raw => { const v = FORMULA.test(raw) ? `'${raw}` : raw; return /[",;\n\r]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v; };
   const unquote = v => v.startsWith("'") && FORMULA.test(v.slice(1)) ? v.slice(1) : v;
-  const toCSV = rows => ['atalho;titulo;categoria;mensagem', ...rows.map(r => [r.shortcut, r.title, r.category, r.body].map(cell).join(';'))].join('\n') + '\n';
+  const toCSV = rows => ['sep=;', 'atalho;titulo;categoria;mensagem', ...rows.map(r => [r.shortcut, r.title, r.category, r.body].map(cell).join(';'))].join('\n') + '\n';
 
   const store = typeof chrome !== 'undefined' && chrome.storage ? chrome.storage.local : null;
   globalThis.QR = { normalize, validate, search, token, variables, fill, merge, automatic, validateVariables, known, missing, sitePattern, validateSites, parseCSV, toCSV,

@@ -196,7 +196,7 @@ test('exportação e importação em JSON e CSV preservam mensagens e rejeitam a
   const exported = JSON.parse(await downloaded(page, '#export'));
   expect(exported.version).toBe(1); expect(exported.library).toHaveLength(DEFAULTS);
   const csv = await downloaded(page, '#export-csv');
-  expect(csv.startsWith('﻿atalho;titulo;categoria;mensagem\n')).toBe(true);
+  expect(csv.startsWith('﻿sep=;\natalho;titulo;categoria;mensagem\n')).toBe(true);
   await page.locator('#file').setInputFiles({ name:'invalido.json', mimeType:'application/json', buffer:Buffer.from(JSON.stringify({version:1,library:[{shortcut:'x'}]})) });
   await expect(page.locator('#status')).toContainText('Não foi possível importar'); await expect(page.locator('#count')).toHaveText(String(DEFAULTS));
   // Cancel on the first dialog means "replace", then the replacement is confirmed.

@@ -80,6 +80,13 @@ test('CSV exportado não vira fórmula na planilha e volta igual na importação
   assert.ok(!/;"?[=+\-@]/.test(csv), 'célula começa com gatilho de fórmula');
   assert.ok(csv.includes("'=SUM(A1)") && csv.includes("'-Cobrança") && csv.includes("'+55"));
   assert.deepEqual(QR.parseCSV(csv), rows);
+  // Excel in a locale that splits on ',' must not see a trigger after a comma: the separator is pinned and commas are quoted.
+  const comma = [{ shortcut: 'x', title: 'a,=1+1,b', category: 'Geral', body: 'ok' }];
+  const out = QR.toCSV(comma);
+  assert.ok(out.startsWith('sep=;\n'));
+  assert.ok(out.includes('"a,=1+1,b"'));
+  assert.deepEqual(QR.parseCSV(out), comma);
+  assert.deepEqual(QR.parseCSV('sep=,\natalho,titulo,categoria,mensagem\ny,"t;1",c,m\n'), [{ shortcut: 'y', title: 't;1', category: 'c', body: 'm' }]);
 });
 test('mesclar pacotes mantém as respostas atuais e pula atalhos repetidos', () => {
   const mine = [{ shortcut: 'ola', title: 'Minha', category: 'A', body: 'x' }];
