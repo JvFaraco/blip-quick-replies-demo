@@ -65,7 +65,7 @@ Mensagens e campos são inseridos como texto, sem interpretar HTML.
 | `background.js` | Service worker: registra o menu nos sites salvos |
 | `popup.*` | Busca rápida com cópia e **Ativar nesta aba** |
 | `biblioteca.*` | Editor da biblioteca: respostas, pacotes, variáveis e sites |
-| `empacotar.py` | Gera o `.zip` em `dist/` com uma lista explícita de arquivos |
+| `empacotar.py` | Gera o `.zip` em `dist/` com uma lista explícita de arquivos (`--loja` gera o formato da Chrome Web Store) |
 
 ## Testes
 
