@@ -84,9 +84,17 @@ test('CSV exportado não vira fórmula na planilha e volta igual na importação
   const comma = [{ shortcut: 'x', title: 'a,=1+1,b', category: 'Geral', body: 'ok' }];
   const out = QR.toCSV(comma);
   assert.ok(out.startsWith('sep=;\n'));
-  assert.ok(out.includes('"a,=1+1,b"'));
+  assert.ok(out.includes(`"a,'=1+1,b"`));
   assert.deepEqual(QR.parseCSV(out), comma);
   assert.deepEqual(QR.parseCSV('sep=,\natalho,titulo,categoria,mensagem\ny,"t;1",c,m\n'), [{ shortcut: 'y', title: 't;1', category: 'c', body: 'm' }]);
+  // Whatever separator a spreadsheet picks, no cell may start with a trigger: triggers after , ; tab or line break inside a value are neutralized too.
+  const nasty = [
+    { shortcut: 'n1', title: 'a,=1+1,b', category: 'x; -y', body: 'linha\n=HYPERLINK("http://x")\n\t@z\r\n+w' },
+    { shortcut: 'n2', title: "já,'=com aspa", category: ",''=duas", body: "normal, 'texto com aspa' e -traço no meio" },
+  ];
+  const text = QR.toCSV(nasty);
+  for (const piece of text.split(/[,;\t\r\n]/)) assert.ok(!/^"*\s*[=+\-@]/.test(piece), `célula perigosa: ${JSON.stringify(piece)}`);
+  assert.deepEqual(QR.parseCSV(text), nasty);
 });
 test('mesclar pacotes mantém as respostas atuais e pula atalhos repetidos', () => {
   const mine = [{ shortcut: 'ola', title: 'Minha', category: 'A', body: 'x' }];

@@ -101,11 +101,15 @@
     }
     return validate(table.slice(1).map(r => ({ shortcut: r[at.shortcut] ?? '', title: unquote(r[at.title] ?? ''), category: unquote(r[at.category] ?? ''), body: unquote(r[at.body] ?? '') })));
   }
-  // A leading = + - @ would run as a formula when the CSV is opened in a spreadsheet; the quote prefix neutralizes it and parseCSV removes it again.
-  const FORMULA = /^'*\s*[=+\-@\t\r]/;
-  // Commas are quoted too, and the first line pins the separator in Excel, so a locale that splits on ',' cannot expose a trigger mid-field.
-  const cell = raw => { const v = FORMULA.test(raw) ? `'${raw}` : raw; return /[",;\n\r]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v; };
-  const unquote = v => v.startsWith("'") && FORMULA.test(v.slice(1)) ? v.slice(1) : v;
+  // A value starting with = + - @ would run as a formula when the CSV is opened in a spreadsheet. The quote prefix neutralizes it
+  // and parseCSV removes it again. A spreadsheet reading with the wrong separator can also start a cell after any , ; tab or line
+  // break inside a value, so triggers in those positions get the same treatment (the sep= line alone is not enough: Excel ignores it after a BOM).
+  // Lookahead, so consecutive delimiters are each checked; whitespace here excludes tab and line breaks because those are delimiters themselves.
+  const TRIGGER = "(?='*[^\\S\\t\\r\\n]*[=+\\-@\\t\\r])";
+  const AT_CELL = new RegExp(`(^|[,;\\t\\r\\n])${TRIGGER}`, 'g'), AT_CELL_QUOTED = new RegExp(`(^|[,;\\t\\r\\n])'${TRIGGER}`, 'g');
+  const neutralize = v => v.replace(AT_CELL, "$1'");
+  const unquote = v => v.replace(AT_CELL_QUOTED, '$1');
+  const cell = raw => { const v = neutralize(raw); return /[",;\n\r]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v; };
   const toCSV = rows => ['sep=;', 'atalho;titulo;categoria;mensagem', ...rows.map(r => [r.shortcut, r.title, r.category, r.body].map(cell).join(';'))].join('\n') + '\n';
 
   const store = typeof chrome !== 'undefined' && chrome.storage ? chrome.storage.local : null;
