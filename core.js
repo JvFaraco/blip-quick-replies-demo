@@ -113,9 +113,58 @@
   const cell = raw => { const v = neutralize(raw); return /[",;\n\r]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v; };
   const toCSV = rows => ['sep=;', 'atalho;titulo;categoria;mensagem', ...rows.map(r => [r.shortcut, r.title, r.category, r.body].map(cell).join(';'))].join('\n') + '\n';
 
+  // Team library: a Google Sheets link (shared "anyone with the link") or any https URL serving CSV or the exported JSON.
+  function teamUrl(input) {
+    let u; try { u = new URL(String(input).trim()); } catch { return null; }
+    if (u.protocol !== 'https:') return null;
+    const sheet = u.hostname === 'docs.google.com' && u.pathname.match(/^\/spreadsheets\/d\/([\w-]+)\//);
+    if (sheet && !u.pathname.includes('/d/e/')) {
+      const gid = u.hash.match(/gid=(\d+)/)?.[1] || u.searchParams.get('gid');
+      return `https://docs.google.com/spreadsheets/d/${sheet[1]}/export?format=csv${gid ? `&gid=${gid}` : ''}`;
+    }
+    return u.href;
+  }
+  function parseLibraryText(text) {
+    const src = text.replace(/^﻿/, '').trim();
+    if (src.startsWith('{')) { const data = JSON.parse(src); if (data.version !== 1) throw Error('Versão de biblioteca não reconhecida.'); return validate(data.library); }
+    if (src.startsWith('<')) throw Error('O link devolveu uma página, não a planilha. Confira se ela está compartilhada com "qualquer pessoa com o link".');
+    return parseCSV(src);
+  }
+  // Team rows win; local rows survive unless they came from the team before and were removed from the sheet.
+  function applyTeam(current, team, previous = []) {
+    const teamRows = validate(team), owned = new Set([...previous, ...teamRows.map(r => r.shortcut)]);
+    return validate([...teamRows, ...current.filter(r => !owned.has(r.shortcut))]);
+  }
+
   const store = typeof chrome !== 'undefined' && chrome.storage ? chrome.storage.local : null;
-  globalThis.QR = { normalize, validate, search, token, variables, fill, merge, automatic, validateVariables, known, missing, sitePattern, validateSites, parseCSV, toCSV,
+  globalThis.QR = { normalize, validate, search, token, variables, fill, merge, automatic, validateVariables, known, missing, sitePattern, validateSites, parseCSV, toCSV, teamUrl, parseLibraryText, applyTeam,
     DEFAULT_SITES: ['https://*.blip.ai/*'],
+    // One-step undo for replacing or importing: the previous library is kept until the next replacement.
+    async saveBackup(rows) { await store.set({ backup: { library: validate(rows), at: Date.now() } }); },
+    async loadBackup() { const { backup } = await store.get('backup'); return backup ? { library: validate(backup.library), at: backup.at } : null; },
+    async clearBackup() { await store.remove('backup'); },
+    async loadTeam() { const { team } = await store.get('team'); return team && typeof team.url === 'string' ? team : null; },
+    async saveTeam(team) { if (team) await store.set({ team }); else await store.remove('team'); },
+    // Downloads the team sheet and applies it. Called from the options page (connect, sync now) and from the service worker (alarm, startup).
+    async syncTeam(url) {
+      const team = (await QR.loadTeam()) || {}, target = url || team.url;
+      if (!target) return null;
+      let text;
+      try {
+        const res = await fetch(target, { cache: 'no-store', credentials: 'omit' });
+        if (!res.ok) throw Error(`HTTP ${res.status}`);
+        text = await res.text();
+      } catch (err) {
+        await QR.saveTeam({ ...team, url: target, error: `Não consegui baixar a planilha (${err.message}).`, errorAt: Date.now() });
+        throw Error(`Não consegui baixar a planilha (${err.message}).`);
+      }
+      const rows = parseLibraryText(text);
+      const library = applyTeam(await QR.load(), rows, team.shortcuts || []);
+      await store.set({ library });
+      const next = { url: target, shortcuts: rows.map(r => r.shortcut), count: rows.length, syncedAt: Date.now() };
+      await QR.saveTeam(next);
+      return next;
+    },
     async load() { const { library } = await store.get('library'); return library === undefined ? structuredClone(QR_DEFAULTS) : validate(library); },
     async save(rows) { const library = validate(rows); await store.set({ library }); return library; },
     async loadVariables() { const { variables } = await store.get('variables'); return variables ? validateVariables(variables) : {}; },

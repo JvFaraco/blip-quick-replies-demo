@@ -10,7 +10,8 @@ test.beforeEach(async ({ page }) => {
     globalThis.chrome = {
       storage: { local: {
         async get(key) { const all = read(); return key in all ? { [key]: all[key] } : {}; },
-        async set(data) { const all = { ...read(), ...data }; localStorage.setItem('test-store', JSON.stringify(all)); const changes = Object.fromEntries(Object.keys(data).map(k => [k, { newValue: data[k] }])); listeners.forEach(fn => fn(changes, 'local')); }
+        async set(data) { const all = { ...read(), ...data }; localStorage.setItem('test-store', JSON.stringify(all)); const changes = Object.fromEntries(Object.keys(data).map(k => [k, { newValue: data[k] }])); listeners.forEach(fn => fn(changes, 'local')); },
+        async remove(key) { const all = read(); delete all[key]; localStorage.setItem('test-store', JSON.stringify(all)); listeners.forEach(fn => fn({ [key]: {} }, 'local')); }
       }, onChanged: { addListener(fn) { listeners.push(fn); } } },
       permissions: { async contains() { return true; }, async request() { globalThis.requested = (globalThis.requested || 0) + 1; return true; }, async remove() { return true; } },
       tabs: { async query() { return [{ id: 1, url: 'https://app.exemplo.com/atendimento/42' }]; } },
@@ -143,6 +144,49 @@ test('pacotes: adicionar junta sem duplicar e substituir troca tudo', async ({ p
   await page.locator('.pack[data-pack=suporte]').getByRole('button', { name: 'Substituir tudo' }).click();
   await expect(page.locator('#count')).toHaveText('9');
   await page.reload(); await expect(page.locator('#count')).toHaveText('9');
+});
+test('substituir e importar podem ser desfeitos uma vez', async ({ page }) => {
+  await page.goto(file('biblioteca.html')); await expect(page.locator('#count')).toHaveText(String(DEFAULTS));
+  await expect(page.locator('#undo')).toBeHidden();
+  await page.getByRole('tab', { name: 'Pacotes' }).click();
+  page.once('dialog', d => d.accept());
+  await page.locator('.pack[data-pack=financeiro]').getByRole('button', { name: 'Substituir tudo' }).click();
+  await expect(page.locator('#count')).toHaveText('8'); await expect(page.locator('#undo')).toBeVisible();
+  await page.locator('#undo').click();
+  await expect(page.locator('#count')).toHaveText(String(DEFAULTS)); await expect(page.locator('#undo')).toBeHidden();
+  await expect(page.locator('#status')).toContainText('restaurada');
+  await page.reload(); await expect(page.locator('#count')).toHaveText(String(DEFAULTS));
+});
+test('página de boas-vindas aparece na instalação e leva às abas', async ({ page }) => {
+  await page.goto(file('biblioteca.html')); await expect(page.locator('#welcome')).toBeHidden();
+  await page.goto(file('biblioteca.html') + '?bemvindo'); await expect(page.locator('#welcome')).toBeVisible();
+  await page.getByRole('button', { name: 'Abrir variáveis' }).click();
+  await expect(page.getByRole('tab', { name: 'Variáveis' })).toHaveAttribute('aria-selected', 'true');
+  await page.getByRole('button', { name: 'Entendi' }).click(); await expect(page.locator('#welcome')).toBeHidden();
+});
+test('planilha da equipe: conecta, marca as respostas, preserva as locais e desconecta', async ({ page }) => {
+  const csv = () => 'atalho;titulo;categoria;mensagem\nola;Da planilha;Equipe;Olá da equipe\nfinalizar;Fechamento da equipe;Equipe;Algo mais?\n';
+  await page.route('https://docs.google.com/spreadsheets/d/ABC123/export?format=csv&gid=0', route => route.fulfill({ status: 200, headers: { 'content-type': 'text/csv', 'access-control-allow-origin': '*' }, body: csv() }));
+  await page.route('https://exemplo.com/privada.csv', route => route.fulfill({ status: 200, headers: { 'content-type': 'text/html', 'access-control-allow-origin': '*' }, body: '<html>login</html>' }));
+  await page.goto(file('biblioteca.html')); await expect(page.locator('#count')).toHaveText(String(DEFAULTS));
+  await page.getByRole('tab', { name: 'Equipe' }).click();
+  await page.locator('#team-url').fill('https://exemplo.com/privada.csv'); await page.getByRole('button', { name: 'Conectar' }).click();
+  await expect(page.locator('#status')).toContainText('devolveu uma página'); await expect(page.locator('#team-form')).toBeVisible();
+  await page.locator('#team-url').fill('https://docs.google.com/spreadsheets/d/ABC123/edit?usp=sharing#gid=0'); await page.getByRole('button', { name: 'Conectar' }).click();
+  await expect(page.locator('#status')).toContainText('2 respostas da equipe');
+  await expect(page.locator('#team-info')).toBeVisible(); await expect(page.locator('#team-meta')).toContainText('2 respostas da equipe');
+  // Both team shortcuts already existed, so they are replaced and the count stays.
+  await expect(page.locator('#count')).toHaveText(String(DEFAULTS));
+  await page.getByRole('tab', { name: 'Respostas' }).click();
+  await expect(page.locator('.card').filter({ hasText: '/ola' }).first()).toContainText('equipe');
+  await expect(page.locator('.card').filter({ hasText: '/ola' }).first()).toContainText('Da planilha');
+  await expect(page.locator('.card').filter({ hasText: '/aguarde' }).first()).not.toContainText('equipe');
+  // A sync from the service worker while the page is open shows up by itself.
+  await page.evaluate(async () => { await QR.syncTeam(); });
+  await expect(page.locator('#count')).toHaveText(String(DEFAULTS));
+  await page.getByRole('tab', { name: 'Equipe' }).click();
+  page.once('dialog', d => d.accept()); await page.getByRole('button', { name: 'Desconectar' }).click();
+  await expect(page.locator('#team-form')).toBeVisible(); await expect(page.locator('#count')).toHaveText(String(DEFAULTS));
 });
 test('variáveis fixas são salvas, validadas e mostram as automáticas', async ({ page }) => {
   await page.goto(file('biblioteca.html'));

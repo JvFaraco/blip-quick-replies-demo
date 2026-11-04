@@ -1,8 +1,14 @@
-// Keeps the content script registered on every remembered site. Runs on install, on browser start and whenever the list changes.
+// Keeps the content script registered on every remembered site and the team sheet in sync.
 importScripts('catalogo.js', 'core.js');
 const sync = () => QR.syncSites().catch(() => {});
-chrome.runtime.onInstalled.addListener(sync);
-chrome.runtime.onStartup.addListener(sync);
+const team = () => QR.syncTeam().catch(() => {});
+chrome.runtime.onInstalled.addListener(({ reason }) => {
+  sync(); team();
+  chrome.alarms.create('team', { periodInMinutes: 30 });
+  if (reason === 'install') chrome.tabs.create({ url: chrome.runtime.getURL('biblioteca.html?bemvindo') });
+});
+chrome.runtime.onStartup.addListener(() => { sync(); team(); chrome.alarms.create('team', { periodInMinutes: 30 }); });
+chrome.alarms.onAlarm.addListener(alarm => { if (alarm.name === 'team') team(); });
 chrome.permissions.onRemoved.addListener(sync);
 chrome.permissions.onAdded.addListener(sync);
 chrome.storage.onChanged.addListener((changes, area) => { if (area === 'local' && changes.sites) sync(); });

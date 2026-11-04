@@ -1,8 +1,9 @@
 const $ = id => document.getElementById(id);
-let rows = [], current = null, dirty = false, revision = null;
+let rows = [], current = null, dirty = false, revision = null, team = null;
 function status(text, error = false) { const s = $('status'); s.textContent = text; s.className = error ? 'error' : ''; void s.offsetWidth; s.classList.add('flash'); }
 function enter(el) { el.classList.remove('enter'); void el.offsetWidth; el.classList.add('enter'); }
 function proceed() { return !dirty || confirm('Há alterações não salvas. Deseja descartá-las?'); }
+const teamOwned = shortcut => !!team?.shortcuts?.includes(shortcut);
 function render() {
   $('count').textContent = rows.length;
   const categories = [...new Set(rows.map(r => r.category))].sort((a,b) => a.localeCompare(b, 'pt-BR'));
@@ -16,6 +17,7 @@ function render() {
     const top = document.createElement('div'); top.className = 'card-top';
     const shortcut = document.createElement('code'); shortcut.textContent = '/' + row.shortcut;
     const category = document.createElement('span'); category.className = 'tag'; category.textContent = row.category; top.append(shortcut, category);
+    if (teamOwned(row.shortcut)) { const t = document.createElement('span'); t.className = 'tag team'; t.textContent = 'equipe'; t.title = 'Vem da planilha da equipe'; top.append(t); }
     const title = document.createElement('h3'); title.textContent = row.title;
     const preview = document.createElement('p'); preview.textContent = row.body.slice(0, 100);
     button.append(top, title, preview); button.onclick = () => { if (proceed()) edit(row); }; $('list').append(button);
@@ -38,21 +40,39 @@ async function persist(next) {
   if (JSON.stringify(stored) !== revision) throw Error('A biblioteca mudou em outra aba. Recarregue esta página antes de salvar.');
   rows = await QR.save(next); revision = JSON.stringify(rows); dirty = false;
 }
+async function reload() { rows = await QR.load(); revision = JSON.stringify(rows); team = await QR.loadTeam(); render(); }
 function reset() { current = null; $('form').hidden = true; $('empty').hidden = false; render(); }
 function download(name, content, type) {
   const url = URL.createObjectURL(new Blob([content], { type })), link = document.createElement('a');
   link.href = url; link.download = name; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
+// Replacing or importing keeps the previous library for one-step undo.
+async function replaceWithUndo(next, message) {
+  const before = rows;
+  await persist(next); await QR.saveBackup(before); reset();
+  status(message); $('undo').hidden = false;
+}
+$('undo').onclick = async () => {
+  try {
+    const backup = await QR.loadBackup(); if (!backup) { $('undo').hidden = true; return; }
+    await persist(backup.library); await QR.clearBackup(); reset(); $('undo').hidden = true;
+    status(`Biblioteca anterior restaurada (${rows.length} respostas).`);
+  } catch (err) { status(err.message, true); }
+};
 
-// Tabs
+// Tabs and welcome card
 function showTab(name) {
   document.querySelectorAll('.tab').forEach(tab => tab.setAttribute('aria-selected', String(tab.dataset.tab === name)));
   document.querySelectorAll('.pane').forEach(pane => { pane.hidden = pane.id !== `tab-${name}`; });
   $('new').hidden = name !== 'respostas';
   if (name === 'variaveis') renderAuto();
   if (name === 'sites') renderSites();
+  if (name === 'equipe') renderTeam();
 }
 document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => showTab(tab.dataset.tab)));
+if (new URLSearchParams(location.search).has('bemvindo')) $('welcome').hidden = false;
+$('welcome-close').onclick = () => { $('welcome').hidden = true; history.replaceState(null, '', location.pathname); };
+document.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => showTab(b.dataset.go)));
 
 // Starter packs
 function renderPacks() {
@@ -70,14 +90,13 @@ function renderPacks() {
     add.onclick = async () => {
       try {
         const merged = QR.merge(rows, pack.library);
-        await persist(merged.rows); reset();
-        status(`${pack.title}: ${fresh} respostas adicionadas${merged.skipped.length ? `, ${merged.skipped.length} já existiam (${merged.skipped.map(s => '/' + s).join(', ')})` : ''}.`);
+        await replaceWithUndo(merged.rows, `${pack.title}: ${fresh} respostas adicionadas${merged.skipped.length ? `, ${merged.skipped.length} já existiam (${merged.skipped.map(s => '/' + s).join(', ')})` : ''}.`);
       } catch (err) { status(err.message, true); }
     };
     const replace = document.createElement('button'); replace.type = 'button'; replace.className = 'secondary'; replace.textContent = 'Substituir tudo';
     replace.onclick = async () => {
-      if (!confirm(`Substituir suas ${rows.length} respostas pelo pacote "${pack.title}" (${pack.library.length})? Exporte antes se quiser guardar uma cópia.`)) return;
-      try { await persist(pack.library); reset(); status(`Biblioteca substituída pelo pacote ${pack.title}.`); } catch (err) { status(err.message, true); }
+      if (!confirm(`Substituir suas ${rows.length} respostas pelo pacote "${pack.title}" (${pack.library.length})? Dá para desfazer logo em seguida.`)) return;
+      try { await replaceWithUndo(pack.library, `Biblioteca substituída pelo pacote ${pack.title}.`); } catch (err) { status(err.message, true); }
     };
     actions.append(add, replace); card.append(h3, p, meta, list, actions);
     return card;
@@ -123,6 +142,48 @@ $('vars').onsubmit = async e => {
   } catch (err) { status(err.message, true); }
 };
 
+// Team sheet
+const when = ts => new Date(ts).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+async function renderTeam() {
+  team = await QR.loadTeam();
+  $('team-form').hidden = !!team; $('team-info').hidden = !team;
+  if (!team) return;
+  $('team-url-view').textContent = team.url;
+  $('team-open').href = team.url.replace(/\/export\?format=csv.*$/, '/edit');
+  $('team-meta').textContent = team.error ? `${team.error} Última sincronização com sucesso: ${team.syncedAt ? when(team.syncedAt) : 'nenhuma'}.` : `${team.count} respostas da equipe · atualizada em ${when(team.syncedAt)} · próxima atualização automática em até 30 minutos.`;
+  $('team-meta').className = team.error ? 'error' : '';
+}
+async function connect(url) {
+  const before = rows;
+  try { await chrome.permissions.request({ origins: [`${new URL(url).origin}/*`] }); } catch {}
+  const result = await QR.syncTeam(url);
+  await QR.saveBackup(before); await reload(); reset(); await renderTeam();
+  status(`Planilha conectada: ${result.count} respostas da equipe. Suas respostas próprias foram mantidas.`); $('undo').hidden = false;
+}
+$('team-form').onsubmit = async e => {
+  e.preventDefault();
+  const url = QR.teamUrl($('team-url').value);
+  if (!url) { status('Cole o link da planilha do Google (https) ou um link direto para CSV.', true); return; }
+  $('team-connect').disabled = true;
+  try { await connect(url); } catch (err) { status(err.message, true); await renderTeam(); }
+  finally { $('team-connect').disabled = false; }
+};
+$('team-sync').onclick = async () => {
+  $('team-sync').disabled = true;
+  try { const result = await QR.syncTeam(); await reload(); reset(); await renderTeam(); status(`Planilha sincronizada: ${result.count} respostas da equipe.`); }
+  catch (err) { status(err.message, true); await renderTeam(); }
+  finally { $('team-sync').disabled = false; }
+};
+$('team-disconnect').onclick = async () => {
+  if (!confirm('Desconectar a planilha? As respostas atuais continuam na sua biblioteca, mas param de atualizar.')) return;
+  await QR.saveTeam(null); await reload(); await renderTeam(); status('Planilha desconectada.');
+};
+$('team-sheet').onclick = async () => {
+  const model = QR.toCSV(rows.length ? rows : QR_DEFAULTS);
+  try { await navigator.clipboard.writeText(model); status('Modelo copiado. Cole numa planilha nova do Google (Ctrl+V) e use Dados > Dividir texto em colunas, se precisar.'); }
+  catch { download('modelo-equipe.csv', '﻿' + model, 'text/csv;charset=utf-8'); status('Modelo baixado. Importe no Google Planilhas.'); }
+};
+
 // Sites
 async function renderSites() {
   const sites = await QR.loadSites();
@@ -156,7 +217,8 @@ $('form').onsubmit = async e => {
     const row = { shortcut: $('shortcut').value, title: $('title').value, category: $('group').value, body: $('body').value };
     const next = rows.filter(r => r.shortcut !== current); next.push(row);
     const clean = QR.validate(next);
-    await persist(clean); edit(rows.find(r => r.shortcut === row.shortcut)); status('Resposta salva. O atalho já está disponível nas abas ativas.');
+    await persist(clean); edit(rows.find(r => r.shortcut === row.shortcut));
+    status(teamOwned(row.shortcut) ? 'Resposta salva. Como ela vem da planilha da equipe, a próxima sincronização vai trazer a versão da planilha de volta.' : 'Resposta salva. O atalho já está disponível nas abas ativas.');
   } catch (err) { status(err.message, true); }
 };
 $('duplicate').onclick = () => {
@@ -184,15 +246,11 @@ $('file').onchange = async () => {
   try {
     const file = $('file').files[0]; if (!file) return;
     if (file.size > 3000000) throw Error('O arquivo excede o limite de 3 MB.');
-    const text = await file.text();
-    let next;
-    if (/\.csv$/i.test(file.name) || file.type === 'text/csv') next = QR.parseCSV(text);
-    else { const data = JSON.parse(text); if (data.version !== 1) throw Error('Versão de biblioteca não reconhecida.'); next = QR.validate(data.library); }
+    const next = QR.parseLibraryText(await file.text());
     const merge = rows.length && confirm(`Importar ${next.length} respostas.\n\nOK: juntar às suas ${rows.length} respostas atuais (atalhos repetidos são ignorados).\nCancelar: substituir tudo pelo arquivo.`);
-    if (!merge && rows.length && !confirm(`Substituir a biblioteca atual de ${rows.length} respostas pelas ${next.length} do arquivo? Exporte antes se quiser guardar uma cópia.`)) return;
+    if (!merge && rows.length && !confirm(`Substituir a biblioteca atual de ${rows.length} respostas pelas ${next.length} do arquivo? Dá para desfazer logo em seguida.`)) return;
     const result = merge ? QR.merge(rows, next) : { rows: next, skipped: [] };
-    await persist(result.rows); reset();
-    status(merge ? `${next.length - result.skipped.length} respostas adicionadas${result.skipped.length ? `, ${result.skipped.length} já existiam` : ''}.` : 'Biblioteca importada com sucesso.');
+    await replaceWithUndo(result.rows, merge ? `${next.length - result.skipped.length} respostas adicionadas${result.skipped.length ? `, ${result.skipped.length} já existiam` : ''}.` : 'Biblioteca importada com sucesso.');
   } catch (err) { status('Não foi possível importar: ' + err.message, true); }
   finally { $('file').value = ''; }
 };
@@ -201,4 +259,6 @@ document.addEventListener('keydown', e => {
   else if (e.key === '/' && !e.ctrlKey && !e.metaKey && !e.altKey && !e.target.closest('input, textarea, select, [contenteditable]')) { e.preventDefault(); showTab('respostas'); $('search').focus(); $('search').select(); }
 });
 window.addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
-QR.load().then(data => { rows = data; revision = JSON.stringify(data); render(); return renderVars(); }).catch(err => status(err.message, true));
+// A sync from the service worker while this page is open shows up without reloading, unless there are unsaved edits.
+chrome.storage.onChanged.addListener((changes, area) => { if (area === 'local' && (changes.library || changes.team) && !dirty) reload().catch(() => {}); });
+reload().then(renderVars).catch(err => status(err.message, true));

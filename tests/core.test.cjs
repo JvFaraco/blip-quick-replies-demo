@@ -98,6 +98,28 @@ test('CSV exportado não vira fórmula na planilha e volta igual na importação
   for (const piece of text.split(/[,;\t\r\n]/)) assert.ok(!/^["\s]*[=+\-@]/.test(piece), `célula perigosa: ${JSON.stringify(piece)}`);
   assert.deepEqual(QR.parseCSV(text), nasty);
 });
+test('link da planilha da equipe é normalizado para CSV', () => {
+  assert.equal(QR.teamUrl('https://docs.google.com/spreadsheets/d/1AbC-xyz_9/edit?usp=sharing#gid=123'), 'https://docs.google.com/spreadsheets/d/1AbC-xyz_9/export?format=csv&gid=123');
+  assert.equal(QR.teamUrl('https://docs.google.com/spreadsheets/d/1AbC/edit'), 'https://docs.google.com/spreadsheets/d/1AbC/export?format=csv');
+  assert.equal(QR.teamUrl('https://docs.google.com/spreadsheets/d/e/2PACX-abc/pub?gid=0&single=true&output=csv'), 'https://docs.google.com/spreadsheets/d/e/2PACX-abc/pub?gid=0&single=true&output=csv');
+  assert.equal(QR.teamUrl(' https://exemplo.com/respostas.csv '), 'https://exemplo.com/respostas.csv');
+  assert.equal(QR.teamUrl('http://exemplo.com/x.csv'), null);
+  assert.equal(QR.teamUrl('planilha'), null);
+});
+test('conteúdo da equipe pode ser CSV ou o JSON exportado', () => {
+  const csv = 'atalho;titulo;categoria;mensagem\nola;Oi;A;Olá!\n';
+  assert.equal(QR.parseLibraryText(csv)[0].shortcut, 'ola');
+  assert.equal(QR.parseLibraryText('﻿' + JSON.stringify({ version: 1, library: [{ shortcut: 'x', title: 'X', category: 'A', body: 'b' }] }))[0].shortcut, 'x');
+  assert.throws(() => QR.parseLibraryText('<html>login</html>'), /planilha|coluna/i);
+});
+test('aplicar equipe substitui as respostas da equipe e preserva as locais', () => {
+  const local = [{ shortcut: 'minha', title: 'Minha', category: 'A', body: 'x' }, { shortcut: 'velha', title: 'Da equipe antes', category: 'A', body: 'y' }, { shortcut: 'ola', title: 'Editada local', category: 'A', body: 'z' }];
+  const team = [{ shortcut: 'ola', title: 'Da planilha', category: 'A', body: 'w' }, { shortcut: 'nova', title: 'Nova', category: 'A', body: 'v' }];
+  const rows = QR.applyTeam(local, team, ['ola', 'velha']);
+  assert.deepEqual(rows.map(r => r.shortcut), ['ola', 'nova', 'minha']);
+  assert.equal(rows[0].title, 'Da planilha');
+  assert.deepEqual(QR.applyTeam([], team, []).map(r => r.shortcut), ['ola', 'nova']);
+});
 test('mesclar pacotes mantém as respostas atuais e pula atalhos repetidos', () => {
   const mine = [{ shortcut: 'ola', title: 'Minha', category: 'A', body: 'x' }];
   const merged = QR.merge(mine, [{ shortcut: 'ola', title: 'Pacote', category: 'A', body: 'y' }, { shortcut: 'novo', title: 'Novo', category: 'A', body: 'z' }]);
