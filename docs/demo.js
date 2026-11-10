@@ -5,7 +5,7 @@
   const store = chrome.storage.local;
   const opening = {
     geral: 'Oi! Preciso de ajuda com o meu cadastro.',
-    ecommerce: 'Boa tarde, meu pedido ainda não chegou 😕',
+    ecommerce: 'Oi, meu pedido ainda não chegou 😕',
     suporte: 'Não consigo entrar no sistema, aparece "senha inválida".',
     agendamento: 'Queria remarcar a consulta de amanhã, pode ser?',
     financeiro: 'Recebi um boleto com valor diferente do combinado.'
