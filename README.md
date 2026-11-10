@@ -6,6 +6,8 @@ Extensão Chrome (Manifest V3) de respostas rápidas para quem atende em chat we
 Na conversa, digite `/`, escolha uma mensagem com ↑ ↓ e insira com Tab ou Enter.
 A extensão só preenche o campo. Quem revisa e envia é o atendente.
 
+**[Experimente no navegador, sem instalar →](https://jvfaraco.github.io/blip-quick-replies-demo/)**
+
 ![Digitando / na conversa, escolhendo a saudação e inserindo com Tab](docs/demo.gif)
 
 Nasceu de uma versão interna usada pela equipe de atendimento do Alarme 365, da Orsegups. Esta é a versão pública, com bibliotecas fictícias para você trocar pelas respostas da sua equipe.
@@ -76,15 +78,29 @@ O único acesso à rede é baixar a planilha da equipe que você conectou. Mensa
 | `biblioteca.*` | Editor da biblioteca: respostas, pacotes, variáveis, equipe e sites |
 | `empacotar.py` | Gera o `.zip` em `dist/` com uma lista explícita de arquivos (`--loja` gera o formato da Chrome Web Store) |
 | `scripts/gravar-gif.cjs` + `scripts/montar-gif.py` | Gravam o GIF do README com Playwright e Pillow |
+| `docs/` | Página de demonstração do GitHub Pages; `npm run demo` copia para `docs/extensao/` os arquivos da extensão que ela usa |
+| `loja/` + `scripts/gerar-loja.cjs` | Pacote da Chrome Web Store: textos, respostas da aba de privacidade e imagens (`npm run loja`) |
 
 ## Testes
 
 ```bash
 npm install
-npm test                       # testes unitários (node:test) + navegador (Playwright)
+npm test                       # unitários e do pacote (node:test) + navegador (Playwright)
 PW_CHANNEL=msedge npm test     # sem Chrome instalado, usa o Edge
 PW_CHANNEL=chromium npm test   # Chromium do Playwright (é o que a CI usa)
 ```
+
+Os testes do pacote conferem que o `.zip` leva todos os arquivos que a extensão carrega, que `manifest.json` e `package.json` têm a mesma versão e que a cópia da extensão em `docs/extensao/` está em dia.
+
+## Publicar uma versão
+
+1. Aumente `version` em `manifest.json` e `package.json`.
+2. Se mexeu em `core.js`, `content.js` ou `catalogo.js`, rode `npm run demo`; se a interface mudou, `npm run loja`.
+3. Crie e envie a tag: `git tag v1.2.1 && git push origin v1.2.1`.
+
+O workflow [Release](.github/workflows/release.yml) confere a tag, roda os testes e anexa à release os dois zips: `quick-replies-<versão>.zip` (carregar sem compactação) e `quick-replies-loja-<versão>.zip` (enviar à Chrome Web Store). O que preencher no painel da loja está em [`loja/README.md`](loja/README.md).
+
+**Página de demonstração:** em Settings → Pages, escolha *Deploy from a branch*, branch `main`, pasta `/docs`.
 
 ## Licença
 
