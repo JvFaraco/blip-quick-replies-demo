@@ -51,3 +51,12 @@ test('biblioteca-padrao.json acompanha o catálogo', () => {
   require('../catalogo.js');
   assert.equal(read('biblioteca-padrao.json'), JSON.stringify({ version: 1, library: QR_DEFAULTS }, null, 2) + '\n', 'rode python empacotar.py para regenerar');
 });
+
+test('demo do GitHub Pages usa cópias em dia dos arquivos da extensão', () => {
+  const { FILES: demo, OUT } = require('../scripts/copiar-demo.cjs');
+  for (const name of demo) {
+    const copy = path.join(OUT, name);
+    assert.ok(fs.existsSync(copy), `falta docs/extensao/${name}: rode npm run demo`);
+    assert.ok(fs.readFileSync(copy).equals(fs.readFileSync(path.join(ROOT, name))), `docs/extensao/${name} desatualizado: rode npm run demo`);
+  }
+});

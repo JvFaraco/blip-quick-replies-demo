@@ -5,7 +5,8 @@
   "license": "MIT",
   "scripts": {
     "test": "node --test tests/core.test.cjs tests/pacote.test.cjs && playwright test",
-    "test:browser": "playwright test"
+    "test:browser": "playwright test",
+    "demo": "node scripts/copiar-demo.cjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.0"
