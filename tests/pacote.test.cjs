@@ -60,3 +60,8 @@ test('demo do GitHub Pages usa cópias em dia dos arquivos da extensão', () => 
     assert.ok(fs.readFileSync(copy).equals(fs.readFileSync(path.join(ROOT, name))), `docs/extensao/${name} desatualizado: rode npm run demo`);
   }
 });
+
+test('nenhum site vem ativado de fábrica: acesso só por site, pedido ao ativar', () => {
+  assert.equal(manifest.host_permissions, undefined, 'host_permissions fixo faz a instalação pedir acesso a sites que o usuário não escolheu');
+  assert.deepEqual(manifest.optional_host_permissions, ['https://*/*', 'http://*/*']);
+});

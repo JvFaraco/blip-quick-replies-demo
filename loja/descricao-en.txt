@@ -1,10 +1,10 @@
-Canned replies for anyone who answers customers in a web chat: Blip, Zendesk, Intercom, WhatsApp Web, HubSpot or your company's own system.
+Canned replies for anyone who answers customers on any web support channel: Zendesk, Intercom, WhatsApp Web, HubSpot, a website chat or your company's own system.
 
 In the conversation, type / and pick a reply with the arrow keys. Tab or Enter inserts the text into the message box. The extension only fills the box: you review and send.
 
 HOW IT WORKS
 • Type / in the message box and filter by shortcut, title, category or text, accents ignored.
-• Works on any site: open the conversation, click the extension icon and "Ativar nesta aba" (Enable on this tab). The site is remembered and / works there by itself next time. Blip works out of the box.
+• Works on any site: open the conversation, click the extension icon and "Ativar nesta aba" (Enable on this tab). The site is remembered and / works there by itself next time.
 • Works in plain text fields and rich text editors, keeping the surrounding text and Ctrl+Z.
 
 VARIABLES
@@ -27,7 +27,7 @@ The interface and the starter packs are in Brazilian Portuguese. Your own replie
 PRIVACY
 No server, no account, no analytics. The library stays in your browser. The extension does not read or store conversations and only runs on sites you enabled. Its only network access is downloading the team spreadsheet you connect.
 
-Open source (MIT license): https://github.com/JvFaraco/blip-quick-replies-demo
-Try it without installing: https://jvfaraco.github.io/blip-quick-replies-demo/
+Open source (MIT license): https://github.com/JvFaraco/quick-replies
+Try it without installing: https://jvfaraco.github.io/quick-replies/
 
-Independent project, not affiliated with Blip or the other products mentioned.
+Independent project, not affiliated with the products mentioned.

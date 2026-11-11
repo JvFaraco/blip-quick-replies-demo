@@ -1,0 +1,7 @@
+# LF em tudo: a CI roda no Linux e o teste do pacote compara bytes das cópias em docs/extensao.
+* text=auto eol=lf
+*.png binary
+*.gif binary
+*.zip binary
+*.ttf binary
+*.woff2 binary

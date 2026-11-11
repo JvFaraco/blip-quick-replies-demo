@@ -20,7 +20,7 @@ function stub() {
     tabs: { async query() { return [{ id: 1, url: 'https://atendimento.exemplo.com/' }]; } },
     scripting: { async executeScript() {} }, runtime: { openOptionsPage() {} }
   };
-  localStorage.setItem('test-store', JSON.stringify({ variables: { empresa: 'Loja Exemplo', atendente: 'Ana' }, sites: ['https://*.blip.ai/*', 'https://atendimento.exemplo.com/*'] }));
+  localStorage.setItem('test-store', JSON.stringify({ variables: { empresa: 'Loja Exemplo', atendente: 'Ana' }, sites: ['https://*.exemplo.com/*', 'https://atendimento.exemplo.com.br/*'] }));
 }
 
 (async () => {

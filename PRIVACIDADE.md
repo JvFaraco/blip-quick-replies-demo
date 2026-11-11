@@ -40,7 +40,6 @@ A extensão não baixa nem executa código remoto: a planilha é lida como texto
 | `activeTab` | Saber o endereço da aba e inserir o menu nela quando o usuário clica em **Ativar nesta aba**. |
 | `scripting` | Inserir o menu de respostas na aba ativada e registrá-lo nos sites que o usuário salvou, para que o `/` funcione sozinho da próxima vez. |
 | `alarms` | Atualizar a planilha da equipe a cada 30 minutos. |
-| Acesso a `*.blip.ai` | Site padrão onde o menu abre sem precisar ativar. |
 | Acesso opcional a outros sites | Pedido ao navegador somente quando o usuário ativa a extensão naquele site, e só para aquele site. Pode ser removido na aba **Sites**. |
 
 ## Como apagar os dados
@@ -55,7 +54,7 @@ O uso das informações tratadas pela extensão segue a [Política de Dados do U
 
 ## Código aberto
 
-O código completo está em https://github.com/JvFaraco/blip-quick-replies-demo, sob licença MIT.
+O código completo está em https://github.com/JvFaraco/quick-replies, sob licença MIT.
 
 ## Contato
 
@@ -105,7 +104,6 @@ The extension does not download or run remote code: the spreadsheet is read as t
 | `activeTab` | Read the tab address and insert the menu into it when the user clicks **Ativar nesta aba**. |
 | `scripting` | Insert the reply menu into the enabled tab and register it on the sites the user saved, so `/` works there by itself next time. |
 | `alarms` | Refresh the team spreadsheet every 30 minutes. |
-| Access to `*.blip.ai` | Default site where the menu works without enabling. |
 | Optional access to other sites | Requested from the browser only when the user enables the extension on that site, and only for that site. Can be removed in the **Sites** tab. |
 
 ## Deleting data
@@ -120,7 +118,7 @@ The use of information handled by this extension complies with the [Chrome Web S
 
 ## Open source
 
-The full source code is at https://github.com/JvFaraco/blip-quick-replies-demo, under the MIT license.
+The full source code is at https://github.com/JvFaraco/quick-replies, under the MIT license.
 
 ## Contact
 

@@ -1,16 +1,13 @@
 {
   "manifest_version": 3,
   "name": "Quick Replies",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Respostas rápidas para atendimento em qualquer chat web. Digite / para escolher uma mensagem e revisar antes de enviar.",
   "permissions": [
     "storage",
     "activeTab",
     "scripting",
     "alarms"
-  ],
-  "host_permissions": [
-    "https://*.blip.ai/*"
   ],
   "optional_host_permissions": [
     "https://*/*",
