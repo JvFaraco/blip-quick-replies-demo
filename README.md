@@ -79,7 +79,7 @@ O único acesso à rede é baixar a planilha da equipe que você conectou. Mensa
 | `empacotar.py` | Gera o `.zip` em `dist/` com uma lista explícita de arquivos (`--loja` gera o formato da Chrome Web Store) |
 | `scripts/gravar-gif.cjs` + `scripts/montar-gif.py` | Gravam o GIF do README com Playwright e Pillow |
 | `docs/` | Página de demonstração do GitHub Pages; `npm run demo` copia para `docs/extensao/` os arquivos da extensão que ela usa |
-| `loja/` + `scripts/gerar-loja.cjs` | Pacote da Chrome Web Store: textos, respostas da aba de privacidade e imagens (`npm run loja`) |
+| `loja/` + `scripts/gerar-loja.cjs` | Pacote da Chrome Web Store: textos, respostas da aba de privacidade e imagens; `npm run loja` também refaz as imagens do README em `docs/` |
 
 ## Testes
 
@@ -95,7 +95,7 @@ Os testes do pacote conferem que o `.zip` leva todos os arquivos que a extensão
 ## Publicar uma versão
 
 1. Aumente `version` em `manifest.json` e `package.json`.
-2. Se mexeu em `core.js`, `content.js` ou `catalogo.js`, rode `npm run demo`; se a interface mudou, `npm run loja`.
+2. Se mexeu em `core.js`, `content.js` ou `catalogo.js`, rode `npm run demo`; se a interface mudou, `npm run loja` (refaz as imagens da loja e as do README).
 3. Crie e envie a tag: `git tag v1.2.1 && git push origin v1.2.1`.
 
 O workflow [Release](.github/workflows/release.yml) confere a tag, roda os testes e anexa à release os dois zips: `quick-replies-<versão>.zip` (carregar sem compactação) e `quick-replies-loja-<versão>.zip` (enviar à Chrome Web Store). O que preencher no painel da loja está em [`loja/README.md`](loja/README.md).

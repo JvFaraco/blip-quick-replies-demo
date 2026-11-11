@@ -30,7 +30,8 @@ function stub() {
     const context = await browser.newContext({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1, colorScheme: 'dark', reducedMotion: 'reduce' });
     await context.clock.setFixedTime(new Date(2026, 10, 3, 9, 40));
     const page = await context.newPage();
-    const shot = name => page.screenshot({ path: path.join(SHOTS, name) });
+    // animations: 'disabled' finishes transitions before the shot, so nothing is captured halfway (a theme fade once greyed out the README image).
+    const shot = (name, dir = SHOTS) => page.screenshot({ path: path.join(dir, name), animations: 'disabled' });
 
     // Demo: hide the hero so the conversation fills the frame, the way the extension looks inside a real chat.
     const demo = async () => {
@@ -58,6 +59,15 @@ function stub() {
     await page.getByRole('tab', { name: 'Equipe' }).click();
     await page.locator('#team-url').fill('https://docs.google.com/spreadsheets/d/1aBcD…/edit');
     await page.waitForTimeout(200); await shot('5-equipe.png');
+
+    // README and GitHub Pages images (docs/): the library at 1440 px in the dark theme.
+    const DOCS = path.join(ROOT, 'docs');
+    await page.setViewportSize({ width: 1440, height: 1168 });
+    await page.getByRole('tab', { name: 'Respostas' }).click();
+    await page.locator('.card').filter({ has: page.locator('code', { hasText: '/saudacao' }) }).click(); await shot('biblioteca-escuro.png', DOCS);
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.getByRole('tab', { name: 'Pacotes' }).click(); await shot('pacotes-escuro.png', DOCS);
+    await page.setViewportSize({ width: 1280, height: 800 });
 
     // Store icon: 96x96 artwork centered on a transparent 128x128 canvas.
     const svg = fs.readFileSync(path.join(ROOT, 'icons', 'icone.svg'), 'utf8');
@@ -90,5 +100,5 @@ h1{font:800 1em/1.05 Montserrat,sans-serif;letter-spacing:-.03em}kbd{display:inl
       `<div class="box"><div class="name"><img src="${svgData}" alt="">Quick Replies</div><h1>Digite <kbd>/</kbd> e responda mais rápido.</h1><p>Respostas prontas no campo de mensagem de qualquer chat web. Você revisa e envia.</p></div><div class="shot"><img src="${menu}" alt=""></div>`,
       '.box{flex:0 0 560px;padding-left:80px}.name{font-size:24px;margin-bottom:24px}h1{font-size:50px}p{margin-top:20px;font-size:20px;line-height:1.5}.shot{flex:1;height:100%;position:relative}.shot img{position:absolute;left:40px;top:50px;width:1000px;border-radius:16px;box-shadow:0 30px 80px #0008}');
   } finally { await browser.close(); }
-  console.log(`imagens em ${path.relative(ROOT, OUT)}/`);
+  console.log(`imagens em ${path.relative(ROOT, OUT)}/ e docs/`);
 })().catch(e => { console.error(e); process.exit(1); });
