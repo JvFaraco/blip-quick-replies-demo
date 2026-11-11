@@ -1,0 +1,33 @@
+Canned replies for anyone who answers customers in a web chat: Blip, Zendesk, Intercom, WhatsApp Web, HubSpot or your company's own system.
+
+In the conversation, type / and pick a reply with the arrow keys. Tab or Enter inserts the text into the message box. The extension only fills the box: you review and send.
+
+HOW IT WORKS
+• Type / in the message box and filter by shortcut, title, category or text, accents ignored.
+• Works on any site: open the conversation, click the extension icon and "Ativar nesta aba" (Enable on this tab). The site is remembered and / works there by itself next time. Blip works out of the box.
+• Works in plain text fields and rich text editors, keeping the surrounding text and Ctrl+Z.
+
+VARIABLES
+• {{saudacao}} becomes "Bom dia", "Boa tarde" or "Boa noite" (good morning, afternoon or evening) by the clock. {{data}} and {{hora}} (date and time) fill themselves in too.
+• Fixed variables such as {{empresa}} (company) and {{atendente}} (agent) are saved once and never typed again.
+• Any other variable, such as {{nome}} or {{pedido}}, opens a short form before inserting.
+
+TEAM LIBRARY
+• A manager keeps the replies in a Google Sheet. Each agent pastes the link once and the extension refreshes it every 30 minutes.
+• Each agent's own replies stay theirs.
+
+READY TO USE
+• Starter packs by team type: general support, online store, tech support, scheduling and billing. Add them to your library or replace everything, with undo.
+• Create, edit, duplicate, export and import replies as JSON or CSV (Excel and Google Sheets).
+• Quick search from the extension icon to copy a reply with its variables filled in.
+• Light and dark themes and full keyboard navigation.
+
+The interface and the starter packs are in Brazilian Portuguese. Your own replies can be in any language.
+
+PRIVACY
+No server, no account, no analytics. The library stays in your browser. The extension does not read or store conversations and only runs on sites you enabled. Its only network access is downloading the team spreadsheet you connect.
+
+Open source (MIT license): https://github.com/JvFaraco/blip-quick-replies-demo
+Try it without installing: https://jvfaraco.github.io/blip-quick-replies-demo/
+
+Independent project, not affiliated with Blip or the other products mentioned.

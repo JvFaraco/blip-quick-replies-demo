@@ -59,8 +59,11 @@ test('campos variáveis são preenchidos antes da inserção', async ({ page }) 
   await expect(field).toHaveValue('Olá Bia! OS 1.');
 });
 test('saudação automática e variáveis fixas entram sem perguntar; só o que falta abre formulário', async ({ page }) => {
+  // Fixed clock: a run that crosses 5h, 12h or 18h would otherwise compare two different greetings.
+  await page.clock.setFixedTime(new Date(2026, 10, 3, 15, 0));
   await page.goto(file('teste.html')); const field = page.locator('#plain');
-  const greeting = await page.evaluate(() => QR.automatic().saudacao);
+  const greeting = 'Boa tarde';
+  expect(await page.evaluate(() => QR.automatic().saudacao)).toBe(greeting);
   // Nothing fixed yet: {{saudacao}} is automatic, {{atendente}} is asked.
   await menu(page, field, '/saudacao'); await field.press('Tab');
   await page.keyboard.type('Ana'); await page.keyboard.press('Enter');

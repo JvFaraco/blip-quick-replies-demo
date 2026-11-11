@@ -1,0 +1,54 @@
+name: Release
+
+# Every tag v<version> builds both zips (load unpacked and Chrome Web Store), runs the tests and attaches the zips to a GitHub release.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  pacote:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Tag igual à versão do manifest
+        run: |
+          versao=$(node -p "require('./manifest.json').version")
+          if [ "$GITHUB_REF_NAME" != "v$versao" ]; then
+            echo "::error::A tag $GITHUB_REF_NAME não bate com a versão $versao do manifest.json (esperado v$versao)."
+            exit 1
+          fi
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm test
+        env:
+          PW_CHANNEL: chromium
+      - name: Gerar os zips
+        run: |
+          python empacotar.py
+          python empacotar.py --loja
+          git diff --exit-code biblioteca-padrao.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: quick-replies-${{ github.ref_name }}
+          path: dist/*.zip
+          if-no-files-found: error
+      - name: Publicar na release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" dist/*.zip --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" dist/*.zip --verify-tag --title "Quick Replies $GITHUB_REF_NAME" --generate-notes
+          fi

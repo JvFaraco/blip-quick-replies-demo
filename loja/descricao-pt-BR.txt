@@ -1,0 +1,31 @@
+Respostas rápidas para quem atende clientes em chat web: Blip, Zendesk, Intercom, WhatsApp Web, HubSpot ou o sistema da sua empresa.
+
+Na conversa, digite / e escolha a resposta com as setas. Tab ou Enter insere o texto no campo. A extensão só preenche: quem revisa e envia é você.
+
+COMO FUNCIONA
+• Digite / no campo de mensagem e filtre por atalho, título, categoria ou texto, sem se preocupar com acentos.
+• Funciona em qualquer site: abra a conversa, clique no ícone da extensão e em "Ativar nesta aba". O site fica salvo e, da próxima vez, o / funciona sozinho. No Blip já vem ativo.
+• Funciona em campos de texto simples e em editores ricos, preservando o texto em volta e o Ctrl+Z.
+
+VARIÁVEIS
+• {{saudacao}} vira "Bom dia", "Boa tarde" ou "Boa noite" conforme a hora. {{data}} e {{hora}} também se preenchem sozinhas.
+• Variáveis fixas, como {{empresa}} e {{atendente}}, são cadastradas uma vez e nunca mais digitadas.
+• Qualquer outra variável, como {{nome}} ou {{pedido}}, abre um formulário curto antes de inserir.
+
+BIBLIOTECA DA EQUIPE
+• O gestor mantém uma planilha do Google com as respostas. Cada atendente cola o link uma vez e a extensão atualiza sozinha a cada 30 minutos.
+• As respostas próprias do atendente continuam dele.
+
+PRONTA PARA USAR
+• Pacotes de partida por tipo de equipe: atendimento geral, loja online, suporte técnico, agendamentos e financeiro. Adicione ao seu acervo ou substitua tudo, com desfazer.
+• Crie, edite, duplique, exporte e importe respostas em JSON ou CSV (Excel e Google Planilhas).
+• Busca rápida no ícone da extensão para copiar uma resposta já preenchida.
+• Tema claro e escuro e navegação completa pelo teclado.
+
+PRIVACIDADE
+Sem servidor, sem conta e sem análise de uso. A biblioteca fica no seu navegador. A extensão não lê nem guarda as conversas e só roda nos sites que você ativou. O único acesso à rede é baixar a planilha da equipe que você conectar.
+
+Código aberto (licença MIT): https://github.com/JvFaraco/blip-quick-replies-demo
+Experimente sem instalar: https://jvfaraco.github.io/blip-quick-replies-demo/
+
+Projeto independente, sem vínculo com a Blip ou com os demais sistemas citados.
