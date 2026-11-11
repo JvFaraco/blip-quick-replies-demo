@@ -17,7 +17,7 @@ function render() {
     const top = document.createElement('div'); top.className = 'card-top';
     const shortcut = document.createElement('code'); shortcut.textContent = '/' + row.shortcut;
     const category = document.createElement('span'); category.className = 'tag'; category.textContent = row.category; top.append(shortcut, category);
-    if (teamOwned(row.shortcut)) { const t = document.createElement('span'); t.className = 'tag team'; t.textContent = 'equipe'; t.title = 'Vem da planilha da equipe'; top.append(t); }
+    if (teamOwned(row.shortcut)) { const t = document.createElement('span'); t.className = 'tag from-team'; t.textContent = 'equipe'; t.title = 'Vem da planilha da equipe'; top.append(t); }
     const title = document.createElement('h3'); title.textContent = row.title;
     const preview = document.createElement('p'); preview.textContent = row.body.slice(0, 100);
     button.append(top, title, preview); button.onclick = () => { if (proceed()) edit(row); }; $('list').append(button);
@@ -60,16 +60,34 @@ $('undo').onclick = async () => {
   } catch (err) { status(err.message, true); }
 };
 
-// Tabs and welcome card
-function showTab(name) {
-  document.querySelectorAll('.tab').forEach(tab => tab.setAttribute('aria-selected', String(tab.dataset.tab === name)));
+// Tabs (ARIA tab pattern: only the selected tab is in the Tab order; arrows, Home and End move between tabs) and welcome card
+const tabs = [...document.querySelectorAll('.tab')], tabBar = document.querySelector('.tabs'), HINT = $('status').textContent;
+function showTab(name, focus = false) {
+  for (const tab of tabs) {
+    const on = tab.dataset.tab === name;
+    tab.setAttribute('aria-selected', String(on)); tab.tabIndex = on ? 0 : -1;
+    if (on) { if (focus) tab.focus(); tab.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
+  }
   document.querySelectorAll('.pane').forEach(pane => { pane.hidden = pane.id !== `tab-${name}`; });
   $('new').hidden = name !== 'respostas';
+  // The idle hint talks about the Respostas tab; the others have their own intro. Feedback messages stay as they are.
+  const s = $('status'); if (!s.textContent || s.textContent === HINT) s.textContent = name === 'respostas' ? HINT : '';
   if (name === 'variaveis') renderAuto();
   if (name === 'sites') renderSites();
   if (name === 'equipe') renderTeam();
 }
-document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => showTab(tab.dataset.tab)));
+tabs.forEach(tab => tab.addEventListener('click', () => showTab(tab.dataset.tab)));
+tabBar.addEventListener('keydown', e => {
+  const i = tabs.indexOf(document.activeElement), to = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 }[e.key];
+  if (i < 0 || to === undefined) return;
+  e.preventDefault(); showTab(tabs[(to + tabs.length) % tabs.length].dataset.tab, true);
+});
+// On narrow screens the tab bar scrolls sideways; data-more tells the CSS which edge hides more tabs.
+function tabEdges() {
+  const max = tabBar.scrollWidth - tabBar.clientWidth, x = tabBar.scrollLeft;
+  tabBar.dataset.more = max <= 1 ? '' : [x > 1 && 'start', x < max - 1 && 'end'].filter(Boolean).join(' ');
+}
+tabBar.addEventListener('scroll', tabEdges, { passive: true }); addEventListener('resize', tabEdges); tabEdges(); document.fonts?.ready.then(tabEdges);
 if (new URLSearchParams(location.search).has('bemvindo')) $('welcome').hidden = false;
 $('welcome-close').onclick = () => { $('welcome').hidden = true; history.replaceState(null, '', location.pathname); };
 document.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => showTab(b.dataset.go)));

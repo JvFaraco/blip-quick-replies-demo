@@ -266,7 +266,7 @@ test('exportação e importação em JSON e CSV preservam mensagens e rejeitam a
   await expect(page.locator('#body')).toHaveValue('Chave Pix: {{chavepix}}\nEnvie o comprovante.');
 });
 test('tema do Portal persiste e layout cabe em telas pequenas', async ({ page }) => {
-  await page.goto(file('biblioteca.html'));
+  await page.emulateMedia({ colorScheme: 'dark' }); await page.goto(file('biblioteca.html'));
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await expect(page.locator('.header')).toHaveCSS('height', '66px');
   await expect(page.locator('h2')).toHaveCSS('font-family', /Montserrat/);
@@ -275,17 +275,56 @@ test('tema do Portal persiste e layout cabe em telas pequenas', async ({ page })
   await page.reload(); await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
   await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(240, 244, 249)');
   await page.locator('.card').filter({hasText:'/saudacao'}).click();
-  await page.screenshot({path:'test-results/biblioteca-claro.png',fullPage:true});
-  await page.getByRole('button', {name:'Ativar tema escuro'}).click();
-  await page.screenshot({path:'test-results/biblioteca-escuro.png',fullPage:true});
-  await page.getByRole('tab', { name: 'Pacotes' }).click(); await page.screenshot({path:'test-results/pacotes-escuro.png',fullPage:true});
+  await page.screenshot({path:'test-results/biblioteca-claro.png',fullPage:true,animations:'disabled'});
+  await page.getByRole('button', {name:'Ativar tema escuro'}).click(); await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await expect(page.locator('html')).not.toHaveClass(/theme-switching/);
+  await expect(page.locator('.card').filter({hasText:'/ola'})).toHaveCSS('background-color', 'rgb(22, 29, 42)');
+  await page.screenshot({path:'test-results/biblioteca-escuro.png',fullPage:true,animations:'disabled'});
+  await page.getByRole('tab', { name: 'Pacotes' }).click(); await page.screenshot({path:'test-results/pacotes-escuro.png',fullPage:true,animations:'disabled'});
   await page.setViewportSize({width:390,height:844});
   for (const tab of ['Respostas', 'Pacotes', 'Variáveis', 'Sites']) {
     await page.getByRole('tab', { name: tab }).click();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), tab).toBe(true);
   }
   await page.getByRole('tab', { name: 'Respostas' }).click();
-  await page.screenshot({path:'test-results/biblioteca-mobile.png',fullPage:true});
+  await page.screenshot({path:'test-results/biblioteca-mobile.png',fullPage:true,animations:'disabled'});
+});
+test('tema segue o sistema até o usuário escolher', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'light' }); await page.goto(file('biblioteca.html'));
+  const html = page.locator('html');
+  await expect(html).toHaveAttribute('data-theme', 'light');
+  await page.emulateMedia({ colorScheme: 'dark' }); await expect(html).toHaveAttribute('data-theme', 'dark');
+  await page.getByRole('button', { name: 'Ativar tema claro' }).click(); await expect(html).toHaveAttribute('data-theme', 'light');
+  await page.emulateMedia({ colorScheme: 'dark' }); await page.reload(); await expect(html).toHaveAttribute('data-theme', 'light');
+});
+test('abas da biblioteca seguem o padrão de teclado', async ({ page }) => {
+  await page.goto(file('biblioteca.html'));
+  const tabs = page.getByRole('tab'), hint = 'Escolha uma resposta para editar';
+  await expect(page.locator('.tab[tabindex="0"]')).toHaveCount(1);
+  await expect(page.locator('#status')).toContainText(hint);
+  await tabs.first().focus(); await page.keyboard.press('ArrowRight');
+  await expect(page.getByRole('tab', { name: 'Pacotes' })).toBeFocused();
+  await expect(page.getByRole('tab', { name: 'Pacotes' })).toHaveAttribute('aria-selected', 'true');
+  await expect(page.getByRole('tabpanel', { name: 'Pacotes' })).toBeVisible();
+  await expect(page.locator('#status')).not.toContainText(hint);
+  await page.keyboard.press('End'); await expect(page.getByRole('tab', { name: 'Sites' })).toBeFocused();
+  await page.keyboard.press('ArrowRight'); await expect(page.getByRole('tab', { name: 'Respostas' })).toBeFocused();
+  await page.keyboard.press('ArrowLeft'); await expect(page.getByRole('tab', { name: 'Sites' })).toBeFocused();
+  await page.keyboard.press('Home'); await expect(page.getByRole('tab', { name: 'Respostas' })).toHaveAttribute('tabindex', '0');
+  await expect(page.locator('#status')).toContainText(hint);
+  await page.keyboard.press('Tab'); await expect(page.locator('#search')).toBeFocused();
+});
+test('selo de equipe fica pequeno no card e abas avisam que rolam no celular', async ({ page }) => {
+  await page.goto(file('biblioteca.html'));
+  await page.evaluate(async () => chrome.storage.local.set({ team: { url: 'https://exemplo.com/equipe.csv', shortcuts: ['ola'], count: 1, syncedAt: 1 } }));
+  await page.reload();
+  const seal = page.locator('.card').filter({ hasText: '/ola' }).locator('.tag.from-team');
+  await expect(seal).toHaveText('equipe'); await expect(seal).toHaveCSS('padding-top', '1px');
+  expect((await seal.boundingBox()).height).toBeLessThan(24);
+  await page.setViewportSize({ width: 375, height: 760 });
+  await expect(page.locator('.tabs')).toHaveAttribute('data-more', 'end');
+  await page.getByRole('tab', { name: 'Sites' }).click();
+  await expect(page.locator('.tabs')).toHaveAttribute('data-more', /start/);
 });
 test('eventos sintéticos da página não abrem o menu nem inserem respostas', async ({ page }) => {
   await page.goto(file('teste.html')); const widget = page.locator('quick-replies');
