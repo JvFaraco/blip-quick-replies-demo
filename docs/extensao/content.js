@@ -36,9 +36,18 @@ input{width:100%;border:1px solid #ffffff24;border-radius:8px;padding:8px 10px;f
 .primary{display:inline-flex;align-items:center;background:#005bac;color:#fff;border-radius:8px;padding:8px 12px 8px 14px;font-weight:600;transition:background .15s,transform .1s}.primary:hover{background:#0669bd}.primary:active,.ghost:active{transform:scale(.97)}.primary kbd{margin:0 0 0 8px;background:#ffffff26;border-color:#ffffff33;color:#fff}
 .ghost{border-radius:8px;padding:8px 12px;color:#aab6c6;transition:background .15s,transform .1s}.ghost:hover{background:#ffffff0f}
 .notice{display:flex;gap:10px;align-items:flex-start;padding:14px;color:#f3c2c2;font-size:12.5px}.notice:before{content:'!';flex:none;display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#ef858533;color:#ef8585;font-weight:800;font-size:12px}
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}`;
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}`;
   root.append(style);
   const panel = document.createElement('div'); panel.className = 'panel'; panel.hidden = true; root.append(panel);
+  // A fixed status region: screen readers only announce changes to a region that already exists.
+  // The count waits for a pause in typing; insertions and errors are announced at once.
+  const live = document.createElement('div'); live.className = 'sr'; live.setAttribute('role', 'status'); root.append(live);
+  let liveTimer = 0;
+  function say(text, delay = 0) {
+    clearTimeout(liveTimer);
+    liveTimer = setTimeout(() => { live.textContent = live.textContent === text ? `${text}\u00a0` : text; }, delay);
+  }
   document.documentElement.append(host);
   const node = (tag, text, cls) => { const e = document.createElement(tag); if (text) e.textContent = text; if (cls) e.className = cls; return e; };
   const animate = (el, frames, options) => motion && el.animate ? el.animate(frames, { easing: EASE, ...options }) : null;
@@ -157,7 +166,9 @@ input{width:100%;border:1px solid #ffffff24;border-radius:8px;padding:8px 10px;f
     view = 'list';
     const count = Math.min(matches.length, LIMIT);
     const header = node('header');
-    header.append(node('span', 'QR', 'mark'), node('span', 'Respostas', 'title'), node('small', `${matches.length} ${matches.length === 1 ? 'resposta' : 'respostas'}`));
+    const countText = `${matches.length} ${matches.length === 1 ? 'resposta' : 'respostas'}`;
+    header.append(node('span', 'QR', 'mark'), node('span', 'Respostas', 'title'), node('small', countText));
+    say(matches.length ? countText : 'Nenhuma resposta', 600);
     listEl = node('div', '', 'list'); listEl.setAttribute('role', 'listbox'); listEl.setAttribute('aria-label', 'Respostas rápidas');
     cursorEl = node('div', '', 'cursor'); listEl.append(cursorEl);
     matches.slice(0, LIMIT).forEach((row, i) => {
@@ -197,7 +208,7 @@ input{width:100%;border:1px solid #ffffff24;border-radius:8px;padding:8px 10px;f
   function fail(message) {
     view = 'notice'; filling = false;
     const header = node('header'); header.append(node('span', 'QR', 'mark'), node('span', 'Respostas', 'title'));
-    show([header, node('div', message, 'notice')], 'forward');
+    show([header, node('div', message, 'notice')], 'forward'); say(message);
     noticeTimer = setTimeout(close, 5000);
   }
   function insert(text) {
@@ -213,7 +224,7 @@ input{width:100%;border:1px solid #ffffff24;border-radius:8px;padding:8px 10px;f
       setter.call(el, value);
       el.setSelectionRange(ctx.token.start + text.length, ctx.token.start + text.length);
       el.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertReplacementText', data: text }));
-      close();
+      close(); say('Resposta inserida. Revise antes de enviar.');
       return;
     }
     // Select only the slash token, preserving formatting and all surrounding text.
@@ -232,7 +243,7 @@ input{width:100%;border:1px solid #ffffff24;border-radius:8px;padding:8px 10px;f
     const ok = document.execCommand('insertText', false, text);
     filling = false;
     if (!ok) { fail('Este editor não aceitou a inserção. Use Copiar na extensão e cole na conversa.'); return; }
-    close();
+    close(); say('Resposta inserida. Revise antes de enviar.');
   }
   function back() {
     const ctx = context;
