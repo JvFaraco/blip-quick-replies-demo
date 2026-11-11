@@ -1,6 +1,9 @@
 // Keeps the content script registered on every remembered site and the team sheet in sync.
 importScripts('catalogo.js', 'core.js');
-const sync = () => QR.syncSites().catch(() => {});
+// One sync at a time: granting a permission and saving the site fire two syncs, and an older run
+// finishing last would re-register the list without the new site.
+let syncing = Promise.resolve();
+const sync = () => (syncing = syncing.then(() => QR.syncSites()).catch(() => {}));
 const team = () => QR.syncTeam().catch(() => {});
 chrome.runtime.onInstalled.addListener(({ reason }) => {
   sync(); team();
