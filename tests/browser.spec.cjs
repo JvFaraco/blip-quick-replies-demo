@@ -291,3 +291,13 @@ test('eventos sintéticos da página não abrem o menu nem inserem respostas', a
   await page.waitForTimeout(150);
   await expect(widget).toBeHidden(); await expect(page.locator('#plain')).toHaveValue('/finalizar');
 });
+test('menu anuncia a contagem, a inserção e os avisos numa região de status', async ({ page }) => {
+  // The menu uses a closed shadow root; open it here to read the status region.
+  await page.addInitScript(() => { const attach = Element.prototype.attachShadow; Element.prototype.attachShadow = function (o) { return attach.call(this, { ...o, mode: 'open' }); }; });
+  await page.goto(file('teste.html')); const field = page.locator('#plain'); const live = page.locator('quick-replies [role=status]');
+  await expect(live).toHaveCount(1);
+  await menu(page, field, '/finalizar'); await expect(live).toHaveText(/^\d+ respostas?$/);
+  await field.press('Enter'); await expect(field).toHaveValue('Posso ajudar em algo mais? 🙂');
+  await expect(live).toHaveText('Resposta inserida. Revise antes de enviar.');
+  await menu(page, field, '/s'); await field.pressSequentially('zzz'); await expect(live).toHaveText('Nenhuma resposta');
+});
