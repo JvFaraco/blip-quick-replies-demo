@@ -6,7 +6,7 @@ Tudo o que o painel do desenvolvedor da Chrome Web Store pede, pronto para copia
 
 ## 1. Pacote
 
-Baixe o `quick-replies-loja-<versão>.zip` da [última release](https://github.com/JvFaraco/blip-quick-replies-demo/releases/latest), gerado pelo workflow a cada tag (`python empacotar.py --loja`: `manifest.json` na raiz do zip, como a loja exige).
+Baixe o `quick-replies-loja-<versão>.zip` da [última release](https://github.com/JvFaraco/quick-replies/releases/latest), gerado pelo workflow a cada tag (`python empacotar.py --loja`: `manifest.json` na raiz do zip, como a loja exige).
 
 ## 2. Listagem (aba "Store listing")
 
@@ -37,8 +37,8 @@ Capturas e banners são PNG sem transparência. Todas as empresas, pessoas e men
 
 ### Links
 
-- Site: `https://jvfaraco.github.io/blip-quick-replies-demo/` (depois de ligar o GitHub Pages, ver o README principal)
-- Suporte: `https://github.com/JvFaraco/blip-quick-replies-demo/issues`
+- Site: `https://jvfaraco.github.io/quick-replies/` (depois de ligar o GitHub Pages, ver o README principal)
+- Suporte: `https://github.com/JvFaraco/quick-replies/issues`
 
 ## 3. Privacidade (aba "Privacy practices")
 
@@ -58,7 +58,6 @@ O painel é em inglês; as respostas vão em inglês, com a tradução ao lado.
 | `activeTab` | When the user clicks "Ativar nesta aba" in the popup, reads the active tab's address to remember that site and inserts the reply menu into that tab. | Quando o usuário clica em "Ativar nesta aba", lê o endereço da aba para lembrar o site e insere o menu nela. |
 | `scripting` | Injects the reply menu (the extension's own packaged content script) into the tab the user enabled, and registers it on the sites the user saved so "/" works there on later visits. | Injeta o menu (script da própria extensão) na aba ativada e o registra nos sites salvos pelo usuário. |
 | `alarms` | Refreshes the team reply spreadsheet the user connected every 30 minutes. | Atualiza a planilha da equipe a cada 30 minutos. |
-| Host `https://*.blip.ai/*` | Blip is the support chat the extension was built for; the reply menu works there without the user enabling each page. | O Blip é o chat para o qual a extensão nasceu; o menu funciona ali sem ativar. |
 | Optional hosts `https://*/*`, `http://*/*` | Requested at runtime only for the single site the user chooses to enable with "Ativar nesta aba", because support teams use many different chat tools. Users can revoke each site in the Sites tab. Never requested in bulk. | Pedido na hora, só para o site que o usuário ativa, porque cada equipe usa um sistema de chat diferente. Pode ser removido na aba Sites. |
 
 **Remote code / Código remoto:** No, I am not using remote code. A planilha da equipe é lida como dado (CSV/JSON validado), não como código.
@@ -73,12 +72,12 @@ Categorias do painel, para conferência: Personally identifiable information, He
 - I do not use or transfer user data for purposes that are unrelated to my item's single purpose.
 - I do not use or transfer user data to determine creditworthiness or for lending purposes.
 
-**Privacy policy URL:** `https://github.com/JvFaraco/blip-quick-replies-demo/blob/main/PRIVACIDADE.md` (português e inglês no mesmo arquivo).
+**Privacy policy URL:** `https://github.com/JvFaraco/quick-replies/blob/main/PRIVACIDADE.md` (português e inglês no mesmo arquivo).
 
 ## 4. Antes de enviar
 
 - [ ] `npm test` passou na CI.
 - [ ] A versão do `manifest.json` foi aumentada, a tag `v<versão>` foi criada e a release tem o zip `quick-replies-loja-<versão>.zip`.
-- [ ] O zip abre em `chrome://extensions` → Carregar sem compactação (depois de descompactar) e o `/` funciona no Blip e num site ativado.
+- [ ] O zip abre em `chrome://extensions` → Carregar sem compactação (depois de descompactar) e o `/` funciona num site ativado com **Ativar nesta aba**.
 - [ ] Imagens regeneradas com `npm run loja` se a interface mudou.
 - [ ] Revisão aprofundada: o acesso opcional a `https://*/*` costuma levar a uma revisão mais demorada. A justificativa acima explica o pedido site a site.

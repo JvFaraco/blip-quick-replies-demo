@@ -1,12 +1,12 @@
 # Quick Replies
 
-[![Testes](https://github.com/JvFaraco/blip-quick-replies-demo/actions/workflows/testes.yml/badge.svg)](https://github.com/JvFaraco/blip-quick-replies-demo/actions/workflows/testes.yml)
+[![Testes](https://github.com/JvFaraco/quick-replies/actions/workflows/testes.yml/badge.svg)](https://github.com/JvFaraco/quick-replies/actions/workflows/testes.yml)
 
-Extensão Chrome (Manifest V3) de respostas rápidas para quem atende em chat web: [Blip](https://www.blip.ai/), Zendesk, Intercom, WhatsApp Web, HubSpot ou o sistema da sua empresa.
+Extensão Chrome (Manifest V3) de respostas rápidas para qualquer canal de atendimento na web: Zendesk, Intercom, WhatsApp Web, HubSpot, um chat de site ou o sistema da sua empresa.
 Na conversa, digite `/`, escolha uma mensagem com ↑ ↓ e insira com Tab ou Enter.
 A extensão só preenche o campo. Quem revisa e envia é o atendente.
 
-**[Experimente no navegador, sem instalar →](https://jvfaraco.github.io/blip-quick-replies-demo/)**
+**[Experimente no navegador, sem instalar →](https://jvfaraco.github.io/quick-replies/)**
 
 ![Digitando / na conversa, escolhendo a saudação e inserindo com Tab](docs/demo.gif)
 
@@ -15,7 +15,7 @@ Nasceu de uma versão interna usada pela equipe de atendimento do Alarme 365, da
 ## O que ela faz
 
 - **Atalhos com `/`** no campo de mensagem: busca por atalho, título, categoria ou texto, sem diferenciar acentos.
-- **Funciona em qualquer site.** Abra a conversa, clique no ícone da extensão e em **Ativar nesta aba**. O site fica salvo e, da próxima vez, o `/` já funciona sozinho. No Blip não precisa ativar.
+- **Funciona em qualquer site.** Abra a conversa, clique no ícone da extensão e em **Ativar nesta aba**. O site fica salvo e, da próxima vez, o `/` já funciona sozinho.
 - **Biblioteca da equipe por planilha.** O gestor mantém uma planilha do Google; cada atendente cola o link uma vez e a extensão atualiza sozinha a cada 30 minutos. Respostas próprias do atendente continuam dele.
 - **Variáveis automáticas**: `{{saudacao}}` vira "Bom dia", "Boa tarde" ou "Boa noite" conforme a hora; `{{data}}` e `{{hora}}` também.
 - **Variáveis fixas**: `{{empresa}}`, `{{atendente}}` ou qualquer outra que você cadastrar uma vez na aba Variáveis e nunca mais digitar.
@@ -63,7 +63,7 @@ A partir daí a extensão baixa a planilha a cada 30 minutos e ao abrir o navega
 
 Não tem servidor próprio. Biblioteca, variáveis, lista de sites e link da planilha ficam em `chrome.storage.local`, no navegador de quem usa.
 A extensão não registra conversas nem os valores digitados nos campos variáveis.
-O conteúdo só roda nos sites que você ativou (e em `*.blip.ai` por padrão); a permissão de cada site é pedida ao navegador na hora de ativar e pode ser removida na aba **Sites**.
+O conteúdo só roda nos sites que você ativou (nenhum vem ativado de fábrica); a permissão de cada site é pedida ao navegador na hora de ativar e pode ser removida na aba **Sites**.
 O único acesso à rede é baixar a planilha da equipe que você conectou. Mensagens e campos são inseridos como texto, sem interpretar HTML.
 
 ## Estrutura

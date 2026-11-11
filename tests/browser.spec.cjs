@@ -114,7 +114,7 @@ test('popup navega pelo teclado, copia com variáveis fixas e lembra o site ao a
   await page.getByRole('button', { name: 'Ativar nesta aba' }).click();
   await expect(page.locator('#status')).toContainText('salvo para app.exemplo.com');
   expect(await page.evaluate(() => [globalThis.requested, globalThis.injected])).toEqual([1, 1]);
-  expect(await page.evaluate(async () => (await chrome.storage.local.get('sites')).sites)).toEqual(['https://*.blip.ai/*', 'https://app.exemplo.com/*']);
+  expect(await page.evaluate(async () => (await chrome.storage.local.get('sites')).sites)).toEqual(['https://app.exemplo.com/*']);
 });
 test('biblioteca salva com Ctrl+S e / leva à busca', async ({ page }) => {
   await page.goto(file('biblioteca.html'));
@@ -207,15 +207,21 @@ test('variáveis fixas são salvas, validadas e mostram as automáticas', async 
   await page.reload(); await page.getByRole('tab', { name: 'Variáveis' }).click();
   await expect(page.locator('.var-row')).toHaveCount(3); await expect(page.locator('.var-row').nth(1).locator('.var-value')).toHaveValue('Ana');
 });
+test('instalação nova começa sem nenhum site salvo', async ({ page }) => {
+  await page.goto(file('biblioteca.html'));
+  await page.getByRole('tab', { name: 'Sites' }).click();
+  await expect(page.locator('.sites')).toContainText('Nenhum site salvo');
+  expect(await page.evaluate(() => QR.loadSites())).toEqual([]);
+});
 test('sites lembrados aparecem e podem ser removidos', async ({ page }) => {
   await page.goto(file('biblioteca.html'));
-  await page.evaluate(async () => chrome.storage.local.set({ sites: ['https://*.blip.ai/*', 'https://app.exemplo.com/*'] }));
+  await page.evaluate(async () => chrome.storage.local.set({ sites: ['https://*.atendimento.exemplo/*', 'https://app.exemplo.com/*'] }));
   await page.getByRole('tab', { name: 'Sites' }).click();
   const items = page.locator('.sites li'); await expect(items).toHaveCount(2);
-  await expect(items.nth(0)).toContainText('blip.ai'); await expect(items.nth(0)).toContainText('com subdomínios'); await expect(items.nth(1)).toContainText('app.exemplo.com');
+  await expect(items.nth(0)).toContainText('atendimento.exemplo'); await expect(items.nth(0)).toContainText('com subdomínios'); await expect(items.nth(1)).toContainText('app.exemplo.com');
   await items.nth(1).getByRole('button', { name: 'Remover' }).click();
   await expect(items).toHaveCount(1); await expect(page.locator('#status')).toContainText('app.exemplo.com removido');
-  expect(await page.evaluate(async () => (await chrome.storage.local.get('sites')).sites)).toEqual(['https://*.blip.ai/*']);
+  expect(await page.evaluate(async () => (await chrome.storage.local.get('sites')).sites)).toEqual(['https://*.atendimento.exemplo/*']);
   await items.nth(0).getByRole('button', { name: 'Remover' }).click();
   await expect(page.locator('.sites')).toContainText('Nenhum site salvo');
 });

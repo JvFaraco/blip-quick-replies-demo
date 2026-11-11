@@ -138,7 +138,6 @@
 
   const store = typeof chrome !== 'undefined' && chrome.storage ? chrome.storage.local : null;
   globalThis.QR = { normalize, validate, search, token, variables, fill, merge, automatic, validateVariables, known, missing, sitePattern, validateSites, parseCSV, toCSV, teamUrl, parseLibraryText, applyTeam,
-    DEFAULT_SITES: ['https://*.blip.ai/*'],
     // One-step undo for replacing or importing: the previous library is kept until the next replacement.
     async saveBackup(rows) { await store.set({ backup: { library: validate(rows), at: Date.now() } }); },
     async loadBackup() { const { backup } = await store.get('backup'); return backup ? { library: validate(backup.library), at: backup.at } : null; },
@@ -169,7 +168,8 @@
     async save(rows) { const library = validate(rows); await store.set({ library }); return library; },
     async loadVariables() { const { variables } = await store.get('variables'); return variables ? validateVariables(variables) : {}; },
     async saveVariables(obj) { const variables = validateVariables(obj); await store.set({ variables }); return variables; },
-    async loadSites() { const { sites } = await store.get('sites'); return sites === undefined ? [...QR.DEFAULT_SITES] : validateSites(sites); },
+    // No site comes enabled out of the box: the user enables each chat with "Ativar nesta aba".
+    async loadSites() { const { sites } = await store.get('sites'); return validateSites(sites); },
     async saveSites(list) { const sites = validateSites(list); await store.set({ sites }); return sites; },
     // Registers the content script on every remembered site the extension has permission for (extension pages and the service worker only).
     async syncSites() {

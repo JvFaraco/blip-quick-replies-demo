@@ -53,7 +53,7 @@ test('variáveis fixas são validadas e o preenchimento deixa só o que falta', 
   assert.equal(QR.known({ saudacao: 'Oi' }).saudacao, 'Oi');
 });
 test('padrão de site vem da URL da aba', () => {
-  assert.equal(QR.sitePattern('https://app.blip.ai/conversas/123?x=1'), 'https://app.blip.ai/*');
+  assert.equal(QR.sitePattern('https://chat.exemplo.com/conversas/123?x=1'), 'https://chat.exemplo.com/*');
   assert.equal(QR.sitePattern('http://localhost:3000/chat'), 'http://localhost:3000/*');
   assert.equal(QR.sitePattern('chrome://extensions'), null);
   assert.equal(QR.sitePattern('file:///C:/teste.html'), null);

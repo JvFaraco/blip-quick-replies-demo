@@ -1,10 +1,10 @@
-Respostas rápidas para quem atende clientes em chat web: Blip, Zendesk, Intercom, WhatsApp Web, HubSpot ou o sistema da sua empresa.
+Respostas rápidas para quem atende clientes em qualquer canal de atendimento na web: Zendesk, Intercom, WhatsApp Web, HubSpot, um chat de site ou o sistema da sua empresa.
 
 Na conversa, digite / e escolha a resposta com as setas. Tab ou Enter insere o texto no campo. A extensão só preenche: quem revisa e envia é você.
 
 COMO FUNCIONA
 • Digite / no campo de mensagem e filtre por atalho, título, categoria ou texto, sem se preocupar com acentos.
-• Funciona em qualquer site: abra a conversa, clique no ícone da extensão e em "Ativar nesta aba". O site fica salvo e, da próxima vez, o / funciona sozinho. No Blip já vem ativo.
+• Funciona em qualquer site: abra a conversa, clique no ícone da extensão e em "Ativar nesta aba". O site fica salvo e, da próxima vez, o / funciona sozinho.
 • Funciona em campos de texto simples e em editores ricos, preservando o texto em volta e o Ctrl+Z.
 
 VARIÁVEIS
@@ -25,7 +25,7 @@ PRONTA PARA USAR
 PRIVACIDADE
 Sem servidor, sem conta e sem análise de uso. A biblioteca fica no seu navegador. A extensão não lê nem guarda as conversas e só roda nos sites que você ativou. O único acesso à rede é baixar a planilha da equipe que você conectar.
 
-Código aberto (licença MIT): https://github.com/JvFaraco/blip-quick-replies-demo
-Experimente sem instalar: https://jvfaraco.github.io/blip-quick-replies-demo/
+Código aberto (licença MIT): https://github.com/JvFaraco/quick-replies
+Experimente sem instalar: https://jvfaraco.github.io/quick-replies/
 
-Projeto independente, sem vínculo com a Blip ou com os demais sistemas citados.
+Projeto independente, sem vínculo com os sistemas citados.
